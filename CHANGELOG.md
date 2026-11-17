@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Optional supervised OAuth TokenManager with asynchronous Task workers, shared
+  refresh results for concurrent callers and scheduled or on-demand renewal.
+- Required credential load/save callbacks, persistence-before-use, pending-save
+  recovery and explicit reconciliation of uncertain refresh outcomes.
+- Credo strict and Dialyzer checks through `mix quality`, using development-only
+  dependencies and a dedicated CI job.
+
 ## 0.1.0
 
 - 124 API operations in 17 resource modules, generated from pinned OpenAPI 2.1.8

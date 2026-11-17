@@ -1,6 +1,8 @@
 defmodule ExFattureincloud.MixProject do
   use Mix.Project
 
+  @doc false
+  @spec project() :: keyword()
   def project do
     [
       app: :ex_fattureincloud,
@@ -12,7 +14,7 @@ defmodule ExFattureincloud.MixProject do
         licenses: ["MIT"],
         links: %{"GitHub" => "https://github.com/elchemista/ex_fattureincloud"},
         files:
-          ~w(lib priv scripts guides mix.exs .formatter.exs README.md LICENSE CHANGELOG.md THIRD_PARTY_NOTICES.md)
+          ~w(lib priv scripts guides mix.exs .formatter.exs .credo.exs README.md LICENSE CHANGELOG.md THIRD_PARTY_NOTICES.md)
       ],
       docs: [
         main: "readme",
@@ -27,19 +29,30 @@ defmodule ExFattureincloud.MixProject do
       ],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      dialyzer: [plt_local_path: "_build/dev/plts", plt_core_path: "_build/dev/plts"],
       aliases: [
         check: [
           "format --check-formatted",
           "compile --warnings-as-errors",
           "test --warnings-as-errors"
+        ],
+        quality: [
+          "format --check-formatted",
+          "compile --warnings-as-errors",
+          "credo --strict",
+          "dialyzer"
         ]
       ]
     ]
   end
 
-  def cli, do: [preferred_envs: [check: :test]]
+  @doc false
+  @spec cli() :: keyword()
+  def cli, do: [preferred_envs: [check: :test, quality: :dev]]
 
   # Run "mix help compile.app" to learn about applications.
+  @doc false
+  @spec application() :: keyword()
   def application do
     [
       extra_applications: [:logger, :crypto, :public_key, :inets]
@@ -53,6 +66,8 @@ defmodule ExFattureincloud.MixProject do
       {:jason, "~> 1.4"},
       {:telemetry, "~> 1.3"},
       {:plug, "~> 1.16", only: :test},
+      {:credo, "~> 1.7", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false}
     ]
   end

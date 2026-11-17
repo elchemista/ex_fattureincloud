@@ -3,6 +3,8 @@ defmodule ExFattureincloud.Transport do
   alias ExFattureincloud.{Client, Error, Response}
   @methods [:get, :head, :post, :put, :patch, :delete, :options]
 
+  @doc false
+  @spec request(Client.t(), atom(), String.t(), keyword()) :: Response.result()
   def request(%Client{} = client, method, path, options \\ []) do
     with :ok <- validate_request(method, path, options) do
       metadata = %{operation: Keyword.get(options, :operation, :custom), method: method}
@@ -10,29 +12,45 @@ defmodule ExFattureincloud.Transport do
     end
   end
 
-  defp validate_request(method, path, options) do
-    cond do
-      method not in @methods ->
-        {:error, Error.validation("unsupported HTTP method")}
+  @spec validate_request(atom(), term(), keyword()) :: :ok | {:error, Error.t()}
+  defp validate_request(method, _path, _options) when method not in @methods,
+    do: {:error, Error.validation("unsupported HTTP method")}
 
-      not is_binary(path) ->
-        {:error, Error.validation("path must be API-relative")}
+  defp validate_request(_method, path, _options) when not is_binary(path),
+    do: {:error, Error.validation("path must be API-relative")}
 
-      not String.starts_with?(path, "/") or String.starts_with?(path, "//") or
-          String.contains?(path, ["\\", "?", "#", "\r", "\n"]) ->
-        {:error, Error.validation("path must be API-relative, without query or fragment")}
-
-      Keyword.keys(options) -- [:query, :body, :multipart, :authenticated, :operation, :accept] !=
-          [] ->
-        {:error, Error.validation("unknown request option")}
-
-      Keyword.has_key?(options, :body) and Keyword.has_key?(options, :multipart) ->
-        {:error, Error.validation("body and multipart are mutually exclusive")}
-
-      true ->
-        :ok
+  defp validate_request(_method, path, options) do
+    with :ok <- validate_path(path), :ok <- validate_option_names(options) do
+      validate_encoding(Keyword.has_key?(options, :body), Keyword.has_key?(options, :multipart))
     end
   end
+
+  @spec validate_path(String.t()) :: :ok | {:error, Error.t()}
+  defp validate_path("//" <> _path), do: invalid_path()
+
+  defp validate_path("/" <> _rest = path) do
+    if String.contains?(path, ["\\", "?", "#", "\r", "\n"]), do: invalid_path(), else: :ok
+  end
+
+  defp validate_path(_path), do: invalid_path()
+
+  @spec invalid_path() :: {:error, Error.t()}
+  defp invalid_path,
+    do: {:error, Error.validation("path must be API-relative, without query or fragment")}
+
+  @spec validate_option_names(keyword()) :: :ok | {:error, Error.t()}
+  defp validate_option_names(options) do
+    case Keyword.keys(options) -- [:query, :body, :multipart, :authenticated, :operation, :accept] do
+      [] -> :ok
+      _unknown -> {:error, Error.validation("unknown request option")}
+    end
+  end
+
+  @spec validate_encoding(boolean(), boolean()) :: :ok | {:error, Error.t()}
+  defp validate_encoding(true, true),
+    do: {:error, Error.validation("body and multipart are mutually exclusive")}
+
+  defp validate_encoding(_body?, _multipart?), do: :ok
 
   defp attempt(client, method, path, options, metadata, count) do
     started = System.monotonic_time()
@@ -179,25 +197,43 @@ defmodule ExFattureincloud.Transport do
   defp authorization(_, false), do: {:ok, nil}
 
   defp authorization(%Client{token: token}, true) do
-    value = if is_function(token, 0), do: token.(), else: token
-
-    if is_binary(value) and value != "" do
-      {:ok, {:bearer, value}}
-    else
-      {:error, %Error{kind: :authentication, message: "a nonempty access token is required"}}
-    end
+    token |> resolve_token() |> token_authorization()
   rescue
     exception ->
       {:error,
        %Error{kind: :authentication, message: "access token provider failed", cause: exception}}
+  catch
+    kind, reason ->
+      {:error,
+       %Error{
+         kind: :authentication,
+         message: "access token provider failed",
+         cause: {kind, reason}
+       }}
   end
+
+  @spec resolve_token(term()) :: term()
+  defp resolve_token(provider) when is_function(provider, 0), do: provider.()
+  defp resolve_token(token), do: token
+
+  @spec token_authorization(term()) :: {:ok, term()} | {:error, Error.t()}
+  defp token_authorization({:ok, token}), do: token_authorization(token)
+
+  defp token_authorization(token) when is_binary(token) and token != "",
+    do: {:ok, {:bearer, token}}
+
+  defp token_authorization({:error, %Error{kind: :authentication} = error}), do: {:error, error}
+
+  defp token_authorization({:error, %Error{} = error}),
+    do:
+      {:error,
+       %Error{kind: :authentication, message: "access token provider failed", cause: error}}
+
+  defp token_authorization(_token),
+    do: {:error, %Error{kind: :authentication, message: "a nonempty access token is required"}}
 
   defp retry_delay(client, method, {:error, error}, count)
        when method in [:get, :head] and count < client.max_retries do
-    retryable =
-      error.kind == :transport or error.status in [408, 429, 500, 502, 503, 504] or
-        (error.status == 403 and not is_nil(error.retry_after))
-
     base = min(client.max_retry_delay, client.retry_delay * Integer.pow(2, min(count, 20)))
 
     delay =
@@ -209,8 +245,19 @@ defmodule ExFattureincloud.Transport do
             base + if(base > 0, do: :rand.uniform(max(1, div(base, 4))), else: 0)
           )
 
-    if retryable and delay <= client.max_retry_delay, do: {:retry, delay}, else: :stop
+    if retryable?(error) and delay <= client.max_retry_delay, do: {:retry, delay}, else: :stop
   end
 
   defp retry_delay(_, _, _, _), do: :stop
+
+  @spec retryable?(Error.t()) :: boolean()
+  defp retryable?(%Error{kind: :transport}), do: true
+
+  defp retryable?(%Error{kind: :http, status: status})
+       when status in [408, 429, 500, 502, 503, 504], do: true
+
+  defp retryable?(%Error{kind: :http, status: 403, retry_after: seconds})
+       when is_integer(seconds), do: true
+
+  defp retryable?(_error), do: false
 end

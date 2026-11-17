@@ -51,36 +51,17 @@ defmodule ExFattureincloud.Usage do
   @doc "Reads a plan quota for :documents, :clients, :suppliers or :products."
   @spec plan(Client.t(), integer() | String.t(), atom() | String.t()) ::
           {:ok, Quota.t()} | {:error, Error.t()}
-  def plan(client, company_id, category) when is_atom(category) or is_binary(category) do
-    category = to_string(category)
+  def plan(client, company_id, category) when is_atom(category),
+    do: plan(client, company_id, Atom.to_string(category))
 
-    if category in @categories do
-      with {:ok, %Response{data: %{} = data} = response} <-
-             Companies.get_company_plan_usage(client, company_id, category: category) do
-        limit = nonnegative(data["limit"])
-        used = nonnegative(data["usage"])
-
-        remaining =
-          if is_number(limit) and is_number(used), do: max(0, limit - used), else: :unknown
-
-        {:ok,
-         %Quota{
-           category: category,
-           period: if(category == "documents", do: :annual, else: :global),
-           limit: limit,
-           used: used,
-           remaining: remaining,
-           checked_at: DateTime.utc_now(),
-           api_rate_limit: response.rate_limit
-         }}
-      else
-        {:error, _} = error -> error
-        _ -> {:error, %Error{kind: :protocol, message: "invalid company plan usage response"}}
-      end
-    else
-      {:error, Error.validation("unsupported quota category")}
-    end
+  def plan(client, company_id, category) when category in @categories do
+    client
+    |> Companies.get_company_plan_usage(company_id, category: category)
+    |> quota_result(category)
   end
+
+  def plan(_client, _company_id, _category),
+    do: {:error, Error.validation("unsupported quota category")}
 
   @doc "Checks document quota for count new documents; returns :unknown when the counter is unavailable."
   @spec can_create_documents?(Client.t(), integer() | String.t(), pos_integer()) ::
@@ -96,35 +77,7 @@ defmodule ExFattureincloud.Usage do
   def invoice_capacity(client, company_id, count \\ 1) when is_integer(count) and count > 0 do
     with {:ok, %Response{data: %{} = info}} <- Companies.get_company_info(client, company_id),
          {:ok, quota} <- documents(client, company_id) do
-      feature = get_in(info, ["plan_info", "functions", "e_invoice"])
-      feature = if is_boolean(feature), do: feature, else: :unknown
-      license = license_status(info["fic_license_expire"])
-      permission = invoice_permission(info)
-      available = Quota.available?(quota, count)
-
-      can_create =
-        combine([
-          available,
-          permission,
-          case license do
-            :active -> true
-            :expired -> false
-            :unknown -> :unknown
-          end
-        ])
-
-      {:ok,
-       %{
-         documents: quota,
-         requested: count,
-         can_create: can_create,
-         quota_available: available,
-         e_invoice_enabled: feature,
-         invoice_write_permission: permission,
-         plan: info["fic_plan_name"],
-         license_expire: info["fic_license_expire"],
-         license_status: license
-       }}
+      {:ok, capacity(info, quota, count)}
     else
       {:error, _} = error -> error
       _ -> {:error, %Error{kind: :protocol, message: "invalid company info response"}}
@@ -135,9 +88,62 @@ defmodule ExFattureincloud.Usage do
   @spec api(Client.t(), integer() | String.t()) :: Response.result()
   defdelegate api(client, company_id), to: Companies, as: :get_api_usage
 
+  @spec quota_result(Response.result(), String.t()) :: {:ok, Quota.t()} | {:error, Error.t()}
+  defp quota_result({:ok, %Response{data: %{} = data, rate_limit: rate_limit}}, category) do
+    limit = nonnegative(data["limit"])
+    used = nonnegative(data["usage"])
+
+    {:ok,
+     %Quota{
+       category: category,
+       period: quota_period(category),
+       limit: limit,
+       used: used,
+       remaining: remaining(limit, used),
+       checked_at: DateTime.utc_now(),
+       api_rate_limit: rate_limit
+     }}
+  end
+
+  defp quota_result({:error, _error} = result, _category), do: result
+
+  defp quota_result(_response, _category),
+    do: {:error, %Error{kind: :protocol, message: "invalid company plan usage response"}}
+
+  @spec capacity(map(), Quota.t(), pos_integer()) :: map()
+  defp capacity(info, quota, count) do
+    license = license_status(info["fic_license_expire"])
+    permission = info |> get_in(["access_info", "permissions"]) |> invoice_permission()
+    available = Quota.available?(quota, count)
+
+    %{
+      documents: quota,
+      requested: count,
+      can_create: combine([available, permission, license_active?(license)]),
+      quota_available: available,
+      e_invoice_enabled:
+        info |> get_in(["plan_info", "functions", "e_invoice"]) |> feature_enabled(),
+      invoice_write_permission: permission,
+      plan: info["fic_plan_name"],
+      license_expire: info["fic_license_expire"],
+      license_status: license
+    }
+  end
+
+  @spec remaining(number() | nil, number() | nil) :: number() | :unknown
+  defp remaining(limit, used) when is_number(limit) and is_number(used), do: max(0, limit - used)
+  defp remaining(_limit, _used), do: :unknown
+  @spec quota_period(String.t()) :: :annual | :global
+  defp quota_period("documents"), do: :annual
+  defp quota_period(_category), do: :global
+  @spec feature_enabled(term()) :: boolean() | :unknown
+  defp feature_enabled(value) when is_boolean(value), do: value
+  defp feature_enabled(_value), do: :unknown
+  @spec nonnegative(term()) :: number() | nil
   defp nonnegative(value) when is_number(value) and value >= 0, do: value
   defp nonnegative(_), do: nil
 
+  @spec license_status(term()) :: :active | :expired | :unknown
   defp license_status(value) when is_binary(value) do
     case Date.from_iso8601(value) do
       {:ok, date} -> if Date.compare(date, Date.utc_today()) == :lt, do: :expired, else: :active
@@ -147,31 +153,24 @@ defmodule ExFattureincloud.Usage do
 
   defp license_status(_), do: :unknown
 
-  defp invoice_permission(info) do
-    permissions = get_in(info, ["access_info", "permissions"]) || %{}
+  @spec license_active?(:active | :expired | :unknown) :: boolean() | :unknown
+  defp license_active?(:active), do: true
+  defp license_active?(:expired), do: false
+  defp license_active?(:unknown), do: :unknown
 
-    case permissions["fic_issued_documents"] do
-      "write" ->
-        true
+  @spec invoice_permission(term()) :: boolean() | :unknown
+  defp invoice_permission(%{"fic_issued_documents" => "detailed"} = permissions),
+    do: permissions |> get_in(["fic_issued_documents_detailed", "invoices"]) |> permission_level()
 
-      "none" ->
-        false
+  defp invoice_permission(%{"fic_issued_documents" => level}), do: permission_level(level)
+  defp invoice_permission(_permissions), do: :unknown
 
-      "read" ->
-        false
+  @spec permission_level(term()) :: boolean() | :unknown
+  defp permission_level("write"), do: true
+  defp permission_level(level) when level in ["none", "read"], do: false
+  defp permission_level(_level), do: :unknown
 
-      "detailed" ->
-        case get_in(permissions, ["fic_issued_documents_detailed", "invoices"]) do
-          "write" -> true
-          level when level in ["none", "read"] -> false
-          _ -> :unknown
-        end
-
-      _ ->
-        :unknown
-    end
-  end
-
+  @spec combine([boolean() | :unknown]) :: boolean() | :unknown
   defp combine(values) do
     cond do
       false in values -> false

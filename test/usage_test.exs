@@ -145,7 +145,7 @@ defmodule ExFattureincloud.UsageTest do
         data: %{
           app_id: nil,
           hourly: %{limit: 2000, usage: 160, remaining: 1840},
-          monthly: %{limit: 40000, usage: 12570, remaining: 27430}
+          monthly: %{limit: 40_000, usage: 12_570, remaining: 27_430}
         }
       })
     end)

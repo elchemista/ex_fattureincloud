@@ -23,8 +23,10 @@ defp deps do
 end
 ```
 
-Esegui `mix deps.get`. Non servono processi o configurazioni aggiuntive nel tuo
-supervision tree: Req gestisce il pool HTTP. Ogni client ha credenziali proprie.
+Esegui `mix deps.get`. Per il token manuale e gli helper OAuth espliciti basta
+creare un client; Req gestisce il pool HTTP. Per il rinnovo OAuth automatico puoi
+aggiungere il processo opzionale `OAuth.TokenManager` al tuo supervision tree.
+Ogni connessione mantiene credenziali proprie.
 
 ## Prima chiamata
 
@@ -149,9 +151,10 @@ Se l'attesa supera il budget, l'errore viene restituito senza anticipare il retr
 Le altre risposte temporanee usano backoff esponenziale con jitter.
 `max_retries: 0` disattiva i retry.
 
-**POST, PUT, PATCH e DELETE non vengono mai ripetute automaticamente**, nemmeno
-per upload, invio SDI o refresh OAuth. Il chiamante deve riconciliare gli esiti
-incerti prima di ripetere una scrittura. I redirect sono disabilitati.
+**Il trasporto non ripete mai POST, PUT, PATCH e DELETE**, inclusi upload, invio
+SDI e singole chiamate di refresh OAuth. Il gestore OAuth opzionale pianifica un
+nuovo tentativo solo per un rifiuto esplicito con `Retry-After`; gli esiti incerti
+richiedono riconciliazione. I redirect sono disabilitati.
 Non esiste un contatore globale locale: tutte le applicazioni che lavorano sulla
 stessa azienda possono consumarne le quote.
 
@@ -208,7 +211,43 @@ separata, come negli SDK ufficiali. La libreria non legge l'intero file in memor
 
 Sono disponibili authorization code, refresh token e Device Code Flow. Vedi
 [autenticazione](guides/authentication.md) per esempi completi e gestione dello state.
-I token non vengono salvati o rinnovati in background dalla libreria.
+Gli helper OAuth espliciti lasciano rinnovo e salvataggio all'applicazione.
+Per coordinarli automaticamente puoi usare `ExFattureincloud.OAuth.TokenManager`:
+
+```elixir
+alias ExFattureincloud.OAuth.TokenManager
+
+# Nel supervision tree, dopo aver salvato il token ottenuto dal callback OAuth:
+children = [
+  {TokenManager,
+   name: MyApp.FicTokenManager,
+   client_id: System.fetch_env!("FIC_CLIENT_ID"),
+   client_secret: System.fetch_env!("FIC_CLIENT_SECRET"),
+   load: fn -> MyApp.FicCredentials.load_token(connection_id) end,
+   save: fn token -> MyApp.FicCredentials.save_token(connection_id, token) end}
+]
+
+{:ok, _supervisor} = Supervisor.start_link(children, strategy: :one_for_one)
+client = TokenManager.client(MyApp.FicTokenManager)
+```
+
+`load` e `save` sono callback obbligatori dell'applicazione: il primo restituisce
+`{:ok, %OAuth.Token{}}`, il secondo salva atomicamente access token, refresh token
+e scadenza e restituisce `:ok` solo dopo il salvataggio. Entrambi possono restituire
+`{:error, reason}`. Il gestore usa un timer per rinnovare prima della scadenza;
+con `automatic: false` rinnova solo quando una richiesta ne ha bisogno.
+Il lavoro HTTP e il salvataggio avvengono in un `Task`, mentre il `GenServer`
+coordina le richieste concorrenti per eseguire un solo rinnovo per connessione.
+`TokenManager.client/1` riutilizza anche la configurazione HTTP del gestore.
+
+Un salvataggio fallito conserva il nuovo token in memoria e riprova solo il
+salvataggio. Errori di rete, server o risposte non valide sospendono il rinnovo;
+`invalid_grant` richiede una nuova autorizzazione. `status/1` espone lo stato senza
+credenziali e `reload/1` ricarica un token riconciliato nell'archivio, rifiutando di
+scartare un rinnovo in corso o un token ancora da salvare. Il gestore non può
+recuperare un token ruotato perso in un crash prima del salvataggio. Usa un solo
+gestore per connessione OAuth, anche se comprende più aziende; su più nodi serve
+un proprietario unico o un coordinamento distribuito dell'applicazione.
 
 Per le subscription usa `ExFattureincloud.Webhooks`; per autenticare le notifiche
 usa `ExFattureincloud.Webhook`:
@@ -250,6 +289,10 @@ un percorso relativo e le opzioni `query`, `body`, `multipart`, `accept`.
 La copertura è verificata offline sul contratto incluso. L'esecuzione con un
 account reale richiede token, scope e piano adeguati; non è stata effettuata su
 un'azienda reale durante lo sviluppo.
+
+Per sviluppare la libreria usa `mix check` per compilazione e test in ambiente
+`test`, e `mix quality` per compilazione, Credo strict e Dialyzer in ambiente `dev`.
+Credo e Dialyxir sono dipendenze di sviluppo e non vengono avviati in produzione.
 
 ## Licenza
 

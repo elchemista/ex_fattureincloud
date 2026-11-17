@@ -19,9 +19,9 @@ defmodule ExFattureincloud.SDKParityTest do
        %{client: client} do
     expected = @fixtures["issued_document"]["value"]
     Req.Test.stub(__MODULE__, &Req.Test.json(&1, expected))
-    assert {:ok, response} = IssuedDocuments.get_issued_document(client, 1, 12345)
+    assert {:ok, response} = IssuedDocuments.get_issued_document(client, 1, 12_345)
     assert response.body == expected
-    assert response.data["items_list"] |> hd() |> Map.fetch!("net_price") == 68.18182
+    assert response.data["items_list"] |> hd() |> Map.fetch!("net_price") == 68.18_182
     assert response.data["currency"]["exchange_rate"] == "1.00000"
     assert response.data["payments_list"] |> hd() |> Map.fetch!("paid_date") == nil
     assert response.data["e_invoice"] == false

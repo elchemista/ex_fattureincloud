@@ -60,7 +60,7 @@ defmodule ExFattureincloud.OAuthTest do
         access_token: "access-secret",
         refresh_token: "refresh-secret",
         token_type: "bearer",
-        expires_in: 86400
+        expires_in: 86_400
       })
     end)
 
@@ -72,8 +72,10 @@ defmodule ExFattureincloud.OAuthTest do
                code: "code"
              )
 
-    assert token.expires_at in (System.system_time(:second) + 86399)..(System.system_time(:second) +
-                                                                         86400)
+    assert token.expires_at in (System.system_time(:second) + 86_399)..(System.system_time(
+                                                                          :second
+                                                                        ) +
+                                                                          86_400)
 
     refute Token.expired?(token)
     refute inspect(token) =~ "access-secret"
@@ -94,7 +96,7 @@ defmodule ExFattureincloud.OAuthTest do
       Req.Test.json(conn, %{
         access_token: "new-access",
         refresh_token: "new-refresh",
-        expires_in: 86400
+        expires_in: 86_400
       })
     end)
 
@@ -158,7 +160,7 @@ defmodule ExFattureincloud.OAuthTest do
       refute Map.has_key?(Jason.decode!(bytes), "client_secret")
 
       Req.Test.json(conn, %{
-        data: %{access_token: "access", refresh_token: "refresh", expires_in: 86400}
+        data: %{access_token: "access", refresh_token: "refresh", expires_in: 86_400}
       })
     end)
 

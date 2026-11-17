@@ -26,7 +26,9 @@ defmodule ExFattureincloud.OAuth do
   Call `authorization_url/2` with a fresh `generate_state/0`; persist it in the
   user's server session and validate the callback with `validate_state/2` before
   exchanging the code. Tokens are returned as `OAuth.Token` structs. Save the new
-  refresh token after every successful refresh. The library stores no credentials.
+  refresh token after every successful refresh. These functions do not store
+  credentials; `ExFattureincloud.OAuth.TokenManager` optionally coordinates
+  renewal and application-provided persistence callbacks.
 
   Device authorization requires provider enablement. `device_token/2` performs
   exactly one poll: schedule subsequent polls using the returned interval and

@@ -163,7 +163,7 @@ defmodule ExFattureincloud.TransportTest do
             } = error} = Clients.create_client(client, 7, %{data: %{}})
 
     assert limit.hourly_remaining == 0
-    assert limit.monthly_limit == 40000
+    assert limit.monthly_limit == 40_000
     refute inspect(error) =~ "payments"
   end
 
@@ -286,6 +286,25 @@ defmodule ExFattureincloud.TransportTest do
     assert {:ok, _} = User.get_user_info(client)
   end
 
+  test "tagged token-provider errors never trigger a GET retry even with HTTP status", %{
+    client: client
+  } do
+    test_process = self()
+    error = %Error{kind: :authentication, status: 503, message: "Refresh unavailable"}
+
+    client = %{
+      client
+      | token: fn ->
+          send(test_process, :provider_called)
+          {:error, error}
+        end
+    }
+
+    assert {:error, ^error} = User.get_user_info(client)
+    assert_receive :provider_called
+    refute_received :provider_called
+  end
+
   test "telemetry excludes request URL, credentials and response bodies", %{client: client} do
     id = {__MODULE__, make_ref()}
     events = for event <- [:start, :stop, :retry], do: [:ex_fattureincloud, :request, event]
@@ -309,5 +328,7 @@ defmodule ExFattureincloud.TransportTest do
     assert duration >= 0
   end
 
+  @doc false
+  @spec handle_event([atom()], map(), map(), pid()) :: tuple()
   def handle_event(event, measures, metadata, pid), do: send(pid, {event, measures, metadata})
 end

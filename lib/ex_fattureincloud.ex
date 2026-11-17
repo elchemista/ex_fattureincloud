@@ -10,8 +10,9 @@ defmodule ExFattureincloud do
       client = ExFattureincloud.new(token: System.fetch_env!("FIC_ACCESS_TOKEN"))
       ExFattureincloud.User.list_user_companies(client)
 
-  Clients are immutable and have no global credentials or background processes.
-  The library never refreshes tokens or repeats writes automatically.
+  Clients are immutable and have no global credentials. Optional supervised
+  OAuth renewal is provided by `ExFattureincloud.OAuth.TokenManager`.
+  API writes are never repeated automatically.
   """
 
   alias ExFattureincloud.{API, Client, Error, Response, Transport}

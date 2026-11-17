@@ -55,6 +55,8 @@ defmodule ExFattureincloud.FilterTest do
   test "invalid identifiers, unsupported values and ambiguous quoting are rejected" do
     assert_raise ArgumentError, fn -> Filter.where("field or 1", :eq, 1) end
     assert_raise ArgumentError, fn -> Filter.where("field", :invalid, 1) end
+    # Invoke dynamically to exercise invalid input without a compile-time type warning.
+    # credo:disable-for-next-line Credo.Check.Refactor.Apply
     assert_raise ArgumentError, fn -> apply(Filter, :where, ["field", :eq, %{}]) end
 
     for value <- ["O'Reilly", "back\\slash", "line\nbreak"] do

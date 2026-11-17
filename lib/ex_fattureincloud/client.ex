@@ -4,8 +4,9 @@ defmodule ExFattureincloud.Client do
 
   Options to `new/1`:
 
-    * `:token` — access token or zero-arity function returning the current token.
-      Omit for OAuth calls; authenticated requests then return an error.
+    * `:token` — access token or zero-arity provider returning the current token,
+      `{:ok, token}` or `{:error, %ExFattureincloud.Error{}}`. Omit for OAuth
+      calls; authenticated requests then return an error.
     * `:base_url` — defaults to `https://api-v2.fattureincloud.it`.
     * `:user_agent` — defaults to `FattureInCloud/2.1.3/Go-SDK`, matching the
       official Go SDK's compatibility header. Override for your integration.
@@ -17,8 +18,9 @@ defmodule ExFattureincloud.Client do
     * `:req_options` — Req options, e.g. `connect_options`, `finch`, `plug` or
       a custom `adapter`. Redirects and Req's own retries are always disabled.
 
-  Token providers are evaluated once per outgoing attempt. Refresh and persistence
-  belong to the application so concurrent users never share mutable credentials.
+  Token providers are evaluated once per outgoing attempt. Clients keep no global
+  credentials. Optional managed renewal is available through
+  `ExFattureincloud.OAuth.TokenManager`; applications supply its storage callbacks.
   Inspection of the client excludes credentials and Req options.
   """
 
@@ -35,9 +37,15 @@ defmodule ExFattureincloud.Client do
     req_options: []
   ]
 
+  @typedoc "A token provider's result, including structured authorization failures."
+  @type token_result :: String.t() | {:ok, String.t()} | {:error, ExFattureincloud.Error.t()}
+
+  @typedoc "A zero-arity provider evaluated before each outgoing HTTP attempt."
+  @type token_provider :: (-> token_result())
+
   @type t :: %__MODULE__{
           base_url: String.t(),
-          token: nil | String.t() | (-> String.t()),
+          token: nil | String.t() | token_provider(),
           user_agent: String.t(),
           receive_timeout: pos_integer(),
           max_retries: non_neg_integer(),
@@ -46,44 +54,83 @@ defmodule ExFattureincloud.Client do
           req_options: keyword()
         }
 
+  @doc "Creates and validates an immutable client configuration. Invalid options raise `ArgumentError`."
   @spec new(keyword()) :: t()
   def new(options \\ []) do
-    allowed = Map.keys(%__MODULE__{base_url: ""}) -- [:__struct__]
-    unknown = Keyword.keys(options) -- allowed
-    if unknown != [], do: raise(ArgumentError, "unknown client options: #{inspect(unknown)}")
+    validate_option_names!(options)
 
     client =
       struct!(__MODULE__, Keyword.put_new(options, :base_url, "https://api-v2.fattureincloud.it"))
 
-    uri = URI.parse(client.base_url)
+    client.base_url |> URI.parse() |> validate_base_url!()
+    validate_token!(client.token)
 
-    unless uri.scheme in ["https", "http"] and is_binary(uri.host) and uri.host != "" and
-             is_nil(uri.userinfo) and is_nil(uri.query) and is_nil(uri.fragment) do
-      raise ArgumentError,
-            "base_url must be an HTTP(S) URL without credentials, query or fragment"
-    end
+    Enum.each([:max_retries, :retry_delay, :max_retry_delay], fn key ->
+      client |> Map.fetch!(key) |> validate_nonnegative!(key)
+    end)
 
-    unless is_nil(client.token) or (is_binary(client.token) and client.token != "") or
-             is_function(client.token, 0),
-           do: raise(ArgumentError, "token must be a nonempty string or zero-arity function")
-
-    for key <- [:max_retries, :retry_delay, :max_retry_delay] do
-      value = Map.fetch!(client, key)
-
-      unless is_integer(value) and value >= 0,
-        do: raise(ArgumentError, "#{key} must be a nonnegative integer")
-    end
-
-    unless is_integer(client.receive_timeout) and client.receive_timeout > 0,
-      do: raise(ArgumentError, "receive_timeout must be a positive integer")
-
-    unless is_binary(client.user_agent) and client.user_agent != "" and
-             not String.contains?(client.user_agent, ["\r", "\n"]),
-           do: raise(ArgumentError, "user_agent must be a nonempty HTTP header value")
-
-    unless Keyword.keyword?(client.req_options),
-      do: raise(ArgumentError, "req_options must be a keyword list")
+    validate_receive_timeout!(client.receive_timeout)
+    validate_user_agent!(client.user_agent)
+    validate_req_options!(client.req_options)
 
     %{client | base_url: String.trim_trailing(client.base_url, "/")}
+  end
+
+  defp validate_option_names!(options) do
+    allowed = Map.keys(%__MODULE__{base_url: ""}) -- [:__struct__]
+
+    case Keyword.keys(options) -- allowed do
+      [] -> :ok
+      unknown -> raise ArgumentError, "unknown client options: #{inspect(unknown)}"
+    end
+  end
+
+  defp validate_base_url!(%URI{
+         scheme: scheme,
+         host: host,
+         userinfo: nil,
+         query: nil,
+         fragment: nil
+       })
+       when scheme in ["https", "http"] and is_binary(host) and host != "",
+       do: :ok
+
+  defp validate_base_url!(_uri),
+    do:
+      raise(
+        ArgumentError,
+        "base_url must be an HTTP(S) URL without credentials, query or fragment"
+      )
+
+  defp validate_token!(nil), do: :ok
+  defp validate_token!(token) when is_binary(token) and token != "", do: :ok
+  defp validate_token!(provider) when is_function(provider, 0), do: :ok
+
+  defp validate_token!(_token),
+    do: raise(ArgumentError, "token must be a nonempty string or zero-arity function")
+
+  defp validate_nonnegative!(value, _key) when is_integer(value) and value >= 0, do: :ok
+
+  defp validate_nonnegative!(_value, key),
+    do: raise(ArgumentError, "#{key} must be a nonnegative integer")
+
+  defp validate_receive_timeout!(timeout) when is_integer(timeout) and timeout > 0, do: :ok
+
+  defp validate_receive_timeout!(_timeout),
+    do: raise(ArgumentError, "receive_timeout must be a positive integer")
+
+  defp validate_user_agent!(value) when is_binary(value) and value != "" do
+    case String.contains?(value, ["\r", "\n"]) do
+      false -> :ok
+      true -> raise ArgumentError, "user_agent must be a nonempty HTTP header value"
+    end
+  end
+
+  defp validate_user_agent!(_value),
+    do: raise(ArgumentError, "user_agent must be a nonempty HTTP header value")
+
+  defp validate_req_options!(options) do
+    unless Keyword.keyword?(options),
+      do: raise(ArgumentError, "req_options must be a keyword list")
   end
 end

@@ -31,9 +31,12 @@ defmodule ExFattureincloud.Error do
           rate_limit: ExFattureincloud.RateLimit.t() | nil
         }
 
-  @doc false
+  @doc "Builds a local parameter-validation error without an HTTP status."
+  @spec validation(String.t()) :: t()
   def validation(message), do: %__MODULE__{kind: :validation, message: message}
-  @doc false
+
+  @doc "Converts an unsuccessful Req response while preserving its body and quota headers."
+  @spec from_req(Req.Response.t()) :: t()
   def from_req(%Req.Response{} = response) do
     limit = ExFattureincloud.RateLimit.from_headers(response.headers)
     {code, message} = details(response.body, response.status)
