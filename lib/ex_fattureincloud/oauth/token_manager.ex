@@ -211,7 +211,8 @@ defmodule ExFattureincloud.OAuth.TokenManager do
 
   def terminate(_reason, _state), do: :ok
 
-  @impl true
+  # OTP 25+ calls this callback; Elixir 1.16 does not yet declare it in GenServer.
+  @impl {:format_status, 1} in GenServer.behaviour_info(:callbacks)
   @doc false
   @spec format_status(map()) :: map()
   def format_status(%{state: state} = status) do

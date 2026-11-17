@@ -21,6 +21,8 @@
   Go/JavaScript/TypeScript behavior and upstream issue/fix references.
 - Regressions for omitted versus empty e-invoice bodies, OAuth response field
   names and supplier fields absent from generated upstream models.
+- Credential-safe OTP status formatting compiles with the Elixir 1.16 behaviour
+  declarations as well as modern Elixir versions.
 - Documentation/package artifacts, Hex dependency auditing and an
   isolated production package smoke test without provider API calls.
 
