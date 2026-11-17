@@ -1,0 +1,10 @@
+{
+  "source": "https://developers.fattureincloud.it/docs/basics/limits-and-quotas/",
+  "reason": "Get API Usage was documented on 2026-10-13 and is not yet in the pinned OpenAPI 2.1.8 specification.",
+  "paths": {
+    "/c/{company_id}/info/api_usage": {
+      "parameters": [{"$ref": "#/components/parameters/company_id"}],
+      "get": {"operationId": "getApiUsage", "tags": ["Companies"], "summary": "Get API Usage", "description": "Returns current API usage and quotas. This request consumes quota.", "parameters": []}
+    }
+  }
+}

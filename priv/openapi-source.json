@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/fattureincloud/openapi-fattureincloud",
+  "commit": "362e3fe524ca5a8cd8b79efdf036c464c16c5c42",
+  "file": "openapi-enriched.yaml",
+  "version": "2.1.8",
+  "source_sha256": "538cf1f25af140b2f1a4e9f7ece2282031b75a648a4d954e51b757a380d97bdf",
+  "json_sha256": "a37901121867f62c7abb6f9efeed71d9e4c41736e9fd4097b2999533bf277b41",
+  "retrieved_at": "2026-11-17",
+  "conversion": "YAML to JSON; no fields removed"
+}

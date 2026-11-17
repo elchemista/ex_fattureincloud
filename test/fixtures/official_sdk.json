@@ -1,0 +1,260 @@
+{
+  "issued_document": {
+    "source": "https://github.com/fattureincloud/fattureincloud-ts-sdk/blob/339771d28d0d28fef93149e7dab81552bd2a98b3/test/api/IssuedDocumentsApi.spec.ts",
+    "variable": "createIssuedDocumentResponse",
+    "value": {
+      "data": {
+        "id": 12345,
+        "type": "receipt",
+        "year": 2021,
+        "numeration": "rec123",
+        "subject": "",
+        "visible_subject": "",
+        "rc_center": "",
+        "ei_cassa_type": null,
+        "ei_withholding_tax_causal": null,
+        "ei_other_withholding_tax_type": null,
+        "ei_other_withholding_tax_causal": null,
+        "stamp_duty": 0,
+        "use_gross_prices": false,
+        "e_invoice": false,
+        "delivery_note": false,
+        "accompanying_invoice": false,
+        "amount_net": 68.18,
+        "amount_vat": 6.82,
+        "amount_gross": 75,
+        "amount_due_discount": 0,
+        "amount_rivalsa": 0,
+        "amount_cassa": 0,
+        "amount_withholding_tax": 0,
+        "amount_other_withholding_tax": 0,
+        "h_margins": 15,
+        "v_margins": 16,
+        "show_payment_method": false,
+        "show_payments": true,
+        "show_totals": "all",
+        "show_notification_button": false,
+        "is_marked": false,
+        "entity": {
+          "id": 54321,
+          "name": "Mary Red S.r.L.",
+          "vat_number": "IT05432181211",
+          "tax_code": "IT05432181211",
+          "address_street": "Corso impero, 66",
+          "address_postal_code": "20900",
+          "address_city": "Milano",
+          "address_province": "MI",
+          "address_extra": "",
+          "country": "Italia",
+          "certified_email": "mary@pec.red.com",
+          "ei_code": "ABCXCR1"
+        },
+        "date": "2021-08-20",
+        "number": 1,
+        "currency": {
+          "id": "EUR",
+          "exchange_rate": "1.00000",
+          "symbol": "€"
+        },
+        "language": {
+          "code": "it",
+          "name": "Italiano"
+        },
+        "notes": "",
+        "rivalsa": 0,
+        "cassa": 0,
+        "withholding_tax": 0,
+        "withholding_tax_taxable": 100,
+        "other_withholding_tax": 0,
+        "payment_method": {
+          "id": 4,
+          "name": "Credit card"
+        },
+        "use_split_payment": false,
+        "items_list": [
+          {
+            "product_id": 5432,
+            "code": "SG3",
+            "name": "Soggiorno",
+            "measure": "",
+            "net_price": 68.18182,
+            "category": "",
+            "id": 277876033,
+            "gross_price": 75,
+            "apply_withholding_taxes": true,
+            "discount": 0,
+            "discount_highlight": false,
+            "qty": 1,
+            "vat": {
+              "id": 3,
+              "value": 10,
+              "description": ""
+            },
+            "stock": false,
+            "description": "",
+            "not_taxable": false
+          }
+        ],
+        "payments_list": [
+          {
+            "amount": 75,
+            "due_date": "2020-08-23",
+            "paid_date": null,
+            "id": 69078013,
+            "status": "not_paid",
+            "payment_account": null
+          }
+        ],
+        "attachment_url": "kdijrnf893hnwkfk45f50f.pdf",
+        "seen_date": null,
+        "next_due_date": "2020-08-23",
+        "template": {
+          "id": 2821,
+          "name": "Light Smoke"
+        },
+        "extra_data": null,
+        "url": "y12h45rn9yf2mse0p43t7ec90vr.pdf",
+        "show_tspay_button": false
+      }
+    }
+  },
+  "clients_page": {
+    "source": "https://github.com/fattureincloud/fattureincloud-ts-sdk/blob/339771d28d0d28fef93149e7dab81552bd2a98b3/test/api/ClientsApi.spec.ts",
+    "variable": "listClientsResponseObj",
+    "value": {
+      "current_page": 1,
+      "data": [
+        {
+          "id": 16451,
+          "code": "AE86",
+          "name": "Avv. Maria Rossi",
+          "type": "person",
+          "first_name": "Maria",
+          "last_name": "Rossi",
+          "contact_person": "",
+          "vat_number": "IT12345640962",
+          "tax_code": "BLTGNI5ABCDA794E",
+          "address_street": "Via Roma, 1",
+          "address_postal_code": "20900",
+          "address_city": "Milano",
+          "address_province": "MI",
+          "address_extra": "",
+          "country": "Italia",
+          "email": "maria.rossi@example.com",
+          "certified_email": "maria.rossi@pec.example.com",
+          "phone": "1234567890",
+          "fax": "",
+          "notes": "",
+          "created_at": "2021-04-29 08:53:07",
+          "updated_at": "2021-04-29 08:53:07",
+          "default_payment_terms": 1,
+          "default_payment_terms_type": "standard",
+          "bank_name": "Indesa",
+          "bank_iban": "IT40P123456781000000123456",
+          "bank_swift_code": "AK86PCT",
+          "shipping_address": "Corso Magellano 4",
+          "e_invoice": true,
+          "ei_code": "111111",
+          "default_vat": {
+            "id": 54321,
+            "value": 45,
+            "description": "",
+            "is_disabled": false
+          },
+          "default_payment_method": {
+            "id": 386092,
+            "name": "Credit card"
+          }
+        },
+        {
+          "id": 25330696,
+          "code": "PD00",
+          "name": "Mario Rossi",
+          "type": "person",
+          "first_name": "Mario",
+          "last_name": "Rossi",
+          "contact_person": "",
+          "vat_number": "IT1234567890",
+          "tax_code": "ABCDEF12G34H567I",
+          "address_street": "Via largo augusto 123",
+          "address_postal_code": "21012",
+          "address_city": "Bergamo",
+          "address_province": "BG",
+          "address_extra": "",
+          "country": "Italia",
+          "email": "info@mariorossi.it",
+          "certified_email": "info@pec.mariorossi.it",
+          "phone": "012345678",
+          "fax": "012345678",
+          "notes": "",
+          "created_at": "2021-04-29 08:53:07",
+          "default_payment_terms": 0,
+          "default_payment_terms_type": "standard",
+          "bank_name": "Monte dei Pascoli",
+          "bank_iban": "IT00P123456781000000123456",
+          "bank_swift_code": "APL86PCT",
+          "shipping_address": "Via Miilano 4",
+          "e_invoice": false,
+          "ei_code": "7654321",
+          "default_vat": {
+            "id": 66,
+            "value": 22,
+            "description": "",
+            "is_disabled": false
+          },
+          "default_payment_method": null
+        }
+      ],
+      "first_page_url": "page=1",
+      "from": 1,
+      "last_page": 2,
+      "last_page_url": "page=2",
+      "next_page_url": "page=2",
+      "path": "entities/clients",
+      "per_page": 5,
+      "prev_page_url": null,
+      "to": 50,
+      "total": 8
+    }
+  },
+  "e_invoice_xml": {
+    "source": "https://github.com/fattureincloud/fattureincloud-ts-sdk/blob/339771d28d0d28fef93149e7dab81552bd2a98b3/test/api/IssuedEInvoicesApi.spec.ts",
+    "variable": "getEInvoiceXmlResponse",
+    "value": "<?xml version=\"1.0\"?><p:FatturaElettronica xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\" xmlns:p=\"http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" versione=\"FPA12\" xsi:schemaLocation=\"http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2 http://www.fatturapa.gov.it/export/fatturazione/sdi/fatturapa/v1.2/Schema_del_file_xml_FatturaPA_versione_1.2.xsd\"><FatturaElettronicaHeader><DatiTrasmissione><IdTrasmittente><IdPaese>IT</IdPaese><IdCodice>01234567890</IdCodice></IdTrasmittente><ProgressivoInvio>00001</ProgressivoInvio><FormatoTrasmissione>FPA12</FormatoTrasmissione><CodiceDestinatario>AAAAAA</CodiceDestinatario></DatiTrasmissione><CedentePrestatore><DatiAnagrafici><IdFiscaleIVA><IdPaese>IT</IdPaese><IdCodice>01234567890</IdCodice></IdFiscaleIVA><Anagrafica><Denominazione>ALPHA SRL</Denominazione></Anagrafica><RegimeFiscale>RF19</RegimeFiscale></DatiAnagrafici><Sede><Indirizzo>VIALE ROMA 543</Indirizzo><CAP>07100</CAP><Comune>SASSARI</Comune><Provincia>SS</Provincia><Nazione>IT</Nazione></Sede></CedentePrestatore><CessionarioCommittente><DatiAnagrafici><CodiceFiscale>09876543210</CodiceFiscale><Anagrafica><Denominazione>AMMINISTRAZIONE BETA</Denominazione></Anagrafica></DatiAnagrafici><Sede><Indirizzo>VIA TORINO 38-B</Indirizzo><CAP>00145</CAP><Comune>ROMA</Comune><Provincia>RM</Provincia><Nazione>IT</Nazione></Sede></CessionarioCommittente></FatturaElettronicaHeader><FatturaElettronicaBody><DatiGenerali><DatiGeneraliDocumento><TipoDocumento>TD01</TipoDocumento><Divisa>EUR</Divisa><Data>2017-01-18</Data><Numero>123</Numero><Causale>LA FATTURA FA RIFERIMENTO AD UNA OPERAZIONE AAAA BBBBBBBBBBBBBBBBBB CCC DDDDDDDDDDDDDDD E FFFFFFFFFFFFFFFFFFFF GGGGGGGGGG HHHHHHH II LLLLLLLLLLLLLLLLL MMM NNNNN OO PPPPPPPPPPP QQQQ RRRR SSSSSSSSSSSSSS</Causale><Causale>SEGUE DESCRIZIONE CAUSALE NEL CASO IN CUI NON SIANO STATI SUFFICIENTI 200 CARATTERI AAAAAAAAAAA BBBBBBBBBBBBBBBBB</Causale></DatiGeneraliDocumento><DatiOrdineAcquisto><RiferimentoNumeroLinea>1</RiferimentoNumeroLinea><IdDocumento>66685</IdDocumento><NumItem>1</NumItem><CodiceCUP>123abc</CodiceCUP><CodiceCIG>456def</CodiceCIG></DatiOrdineAcquisto><DatiContratto><RiferimentoNumeroLinea>1</RiferimentoNumeroLinea><IdDocumento>123</IdDocumento><Data>2016-09-01</Data><NumItem>5</NumItem><CodiceCUP>123abc</CodiceCUP><CodiceCIG>456def</CodiceCIG></DatiContratto><DatiConvenzione><RiferimentoNumeroLinea>1</RiferimentoNumeroLinea><IdDocumento>456</IdDocumento><NumItem>5</NumItem><CodiceCUP>123abc</CodiceCUP><CodiceCIG>456def</CodiceCIG></DatiConvenzione><DatiRicezione><RiferimentoNumeroLinea>1</RiferimentoNumeroLinea><IdDocumento>789</IdDocumento><NumItem>5</NumItem><CodiceCUP>123abc</CodiceCUP><CodiceCIG>456def</CodiceCIG></DatiRicezione><DatiTrasporto><DatiAnagraficiVettore><IdFiscaleIVA><IdPaese>IT</IdPaese><IdCodice>24681012141</IdCodice></IdFiscaleIVA><Anagrafica><Denominazione>Trasporto spa</Denominazione></Anagrafica></DatiAnagraficiVettore><DataOraConsegna>2017-01-10T16:46:12.000+02:00</DataOraConsegna></DatiTrasporto></DatiGenerali><DatiBeniServizi><DettaglioLinee><NumeroLinea>1</NumeroLinea><Descrizione>DESCRIZIONE DELLA FORNITURA</Descrizione><Quantita>5.00</Quantita><PrezzoUnitario>1.00</PrezzoUnitario><PrezzoTotale>5.00</PrezzoTotale><AliquotaIVA>22.00</AliquotaIVA></DettaglioLinee><DatiRiepilogo><AliquotaIVA>22.00</AliquotaIVA><ImponibileImporto>5.00</ImponibileImporto><Imposta>1.10</Imposta><EsigibilitaIVA>I</EsigibilitaIVA></DatiRiepilogo></DatiBeniServizi><DatiPagamento><CondizioniPagamento>TP01</CondizioniPagamento><DettaglioPagamento><ModalitaPagamento>MP01</ModalitaPagamento><DataScadenzaPagamento>2017-02-18</DataScadenzaPagamento><ImportoPagamento>6.10</ImportoPagamento></DettaglioPagamento></DatiPagamento></FatturaElettronicaBody></p:FatturaElettronica>"
+  },
+  "ApiErrorResponse_oauth_error": {
+    "source": "priv/openapi.json#/components/responses/ApiErrorResponse",
+    "value": {
+      "error": "invalid_request",
+      "error_description": "The code field is required when grant type is authorization_code."
+    }
+  },
+  "ApiErrorResponse_validation_error": {
+    "source": "priv/openapi.json#/components/responses/ApiErrorResponse",
+    "value": {
+      "error": {
+        "message": "Il totale dei pagamenti non corrisponde al totale da pagare.",
+        "validation_result": null
+      },
+      "extra": {
+        "totals": {
+          "amount_due": 610,
+          "amount_due_discount": null,
+          "amount_enasarco_taxable": 0,
+          "amount_global_cassa_taxable": 500,
+          "amount_gross": 610,
+          "amount_net": 500,
+          "amount_vat": 110,
+          "payments_sum": 579.5,
+          "taxable_amount": 500,
+          "vat_list": {
+            "22": {
+              "amount_net": 500,
+              "amount_vat": 110
+            }
+          }
+        }
+      }
+    }
+  }
+}
