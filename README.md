@@ -7,7 +7,7 @@ indipendente, non uno SDK ufficiale Fatture in Cloud.
 
 Il trasporto è scritto per Elixir; endpoint e scope sono generati dalla specifica
 OpenAPI ufficiale inclusa in `priv/openapi.json`. Autenticazione, filtri e casi di
-serializzazione sono confrontati con gli SDK ufficiali Go e TypeScript. Commit,
+serializzazione sono confrontati con gli SDK ufficiali Go, JavaScript e TypeScript. Commit,
 fonti e test corrispondenti sono elencati in [SDK parity](guides/sdk-parity.md).
 
 ## Installazione
@@ -279,7 +279,7 @@ Le risposte HTTP complete possono contenere dati personali: gestiscile nel tuo l
 ## Catalogo e manutenzione
 
 - [Tutte le funzioni disponibili](guides/endpoints.md)
-- [Confronto con Go e TypeScript](guides/sdk-parity.md)
+- [Confronto con Go, JavaScript e TypeScript](guides/sdk-parity.md)
 - [Sviluppo, generazione e verifiche](guides/development.md)
 - [Specifiche ufficiali](https://github.com/fattureincloud/openapi-fattureincloud)
 - [Documentazione API ufficiale](https://developers.fattureincloud.it/)
@@ -292,7 +292,27 @@ un'azienda reale durante lo sviluppo.
 
 Per sviluppare la libreria usa `mix check` per compilazione e test in ambiente
 `test`, e `mix quality` per compilazione, Credo strict e Dialyzer in ambiente `dev`.
-Credo e Dialyxir sono dipendenze di sviluppo e non vengono avviati in produzione.
+Credo e Dialyxir sono dipendenze **solo `:dev`**; Req.Test, Plug e OpenApiSpex
+servono ai test, senza aggiungere validatori OpenAPI al client di produzione.
+
+I test contrattuali attraversano Req e validano richieste e risposte simulate per
+tutte le 124 operazioni, leggendo gli schemi JSON versionati indipendentemente dal
+catalogo generato dell'SDK. Il controllo dei tipi JSON impedisce che un cast da
+stringa a numero nasconda errori di serializzazione. Le 26 incoerenze note degli
+esempi ufficiali sono registrate in una baseline legata agli hash delle sorgenti;
+gli schemi originali restano invariati. Puoi eseguire soltanto questi controlli con:
+
+```sh
+mix test --only contract --warnings-as-errors
+```
+
+La CI esegue test e coverage minima del **90%** su **Elixir 1.19/OTP 28** e
+**Elixir 1.20/OTP 29**, con job separati di Credo strict e Dialyzer per entrambe le
+combinazioni. Elixir 1.16/OTP 26 conserva un controllo di compatibilità sui test.
+Sono inclusi rigenerazione del contratto, documentazione senza warning, build del
+pacchetto e avvio isolato in produzione, senza credenziali o chiamate al servizio.
+Cache, artifact, permessi e dettagli dei controlli sono descritti nella
+[guida di sviluppo](guides/development.md).
 
 ## Licenza
 

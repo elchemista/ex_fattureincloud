@@ -1,48 +1,212 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: Tests (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - elixir: '1.16'
-            otp: '26'
-          - elixir: '1.20'
-            otp: '29'
+          - elixir: '1.16.x'
+            otp: '26.x'
+            coverage: false
+          - elixir: '1.19.x'
+            otp: '28.x'
+            coverage: true
+          - elixir: '1.20.x'
+            otp: '29.x'
+            coverage: true
+    env:
+      MIX_ENV: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: erlef/setup-beam@v1
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Elixir and Erlang/OTP
+        id: beam
+        uses: erlef/setup-beam@v1
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
-      - uses: actions/cache@v4
+      - name: Restore dependency and test build cache
+        uses: actions/cache@v6
         with:
           path: |
             deps
-            _build
-          key: ${{ runner.os }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('mix.lock') }}
-      - run: mix deps.get
-      - run: mix check
-      - run: python3 scripts/generate.py --check
-      - run: mix docs --warnings-as-errors
-        if: matrix.elixir == '1.20'
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: erlef/setup-beam@v1
-        id: beam
+            _build/test
+          key: ${{ runner.os }}-test-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('mix.lock') }}
+      - name: Install locked dependencies
+        run: mix deps.get --check-locked
+      - name: Check formatting
+        if: matrix.elixir != '1.16.x'
+        run: mix format --check-formatted
+      - name: Compile without warnings
+        run: mix compile --warnings-as-errors
+      - name: Verify generated API contract is reproducible
+        if: matrix.elixir == '1.20.x'
+        run: python3 scripts/generate.py --check
+      - name: Run full test suite
+        if: ${{ !matrix.coverage }}
+        run: mix test --warnings-as-errors
+      - name: Run full suite with minimum 90 percent coverage
+        if: matrix.coverage
+        run: mix test --cover --warnings-as-errors
+      - name: Upload coverage report
+        if: always() && matrix.coverage
+        uses: actions/upload-artifact@v7
         with:
-          elixir-version: '1.20'
-          otp-version: '29'
-      - uses: actions/cache@v4
+          name: coverage-elixir-${{ matrix.elixir }}-otp-${{ matrix.otp }}
+          path: cover/
+          if-no-files-found: warn
+          retention-days: 14
+
+  credo:
+    name: Credo strict (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - elixir: '1.19.x'
+            otp: '28.x'
+          - elixir: '1.20.x'
+            otp: '29.x'
+    env:
+      MIX_ENV: dev
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Elixir and Erlang/OTP
+        id: beam
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+      - name: Restore dependency and development build cache
+        uses: actions/cache@v6
         with:
           path: |
             deps
             _build/dev
-          key: ${{ runner.os }}-quality-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('mix.lock') }}
-      - run: mix deps.get
-      - run: mix quality
+          key: ${{ runner.os }}-credo-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('mix.lock') }}
+      - name: Install locked dependencies
+        run: mix deps.get --check-locked
+      - name: Compile without warnings
+        run: mix compile --warnings-as-errors
+      - name: Run Credo strict
+        run: mix credo --strict
+
+  dialyzer:
+    name: Dialyzer (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - elixir: '1.19.x'
+            otp: '28.x'
+          - elixir: '1.20.x'
+            otp: '29.x'
+    env:
+      MIX_ENV: dev
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Elixir and Erlang/OTP
+        id: beam
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+      - name: Restore dependency, build and PLT cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            deps
+            _build/dev
+          key: ${{ runner.os }}-dialyzer-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('mix.lock') }}
+      - name: Install locked dependencies
+        run: mix deps.get --check-locked
+      - name: Compile without warnings
+        run: mix compile --warnings-as-errors
+      - name: Run Dialyzer
+        run: mix dialyzer --format github
+
+  package:
+    name: Documentation and package dry-run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      MIX_ENV: dev
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Elixir and Erlang/OTP
+        id: beam
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.20.x'
+          otp-version: '29.x'
+      - name: Restore dependency and development build cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            deps
+            _build/dev
+          key: ${{ runner.os }}-package-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('mix.lock') }}
+      - name: Install locked dependencies
+        run: mix deps.get --check-locked
+      - name: Audit Hex dependencies
+        run: mix hex.audit
+      - name: Build documentation without warnings
+        run: mix docs --warnings-as-errors
+      - name: Build and unpack package without publishing
+        run: |
+          mix hex.build --output "$RUNNER_TEMP/ex_fattureincloud.tar"
+          mix hex.build --unpack --output "$RUNNER_TEMP/ex_fattureincloud-package"
+      - name: Compile and check isolated production package
+        env:
+          MIX_ENV: prod
+        working-directory: ${{ runner.temp }}/ex_fattureincloud-package
+        run: |
+          mix deps.get --only prod
+          mix compile --warnings-as-errors
+          mix run --no-start "$GITHUB_WORKSPACE/scripts/ci/package_smoke.exs"
+      - name: Upload generated documentation
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-documentation
+          path: doc/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload package archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: hex-package
+          path: ${{ runner.temp }}/ex_fattureincloud.tar
+          if-no-files-found: error
+          retention-days: 14

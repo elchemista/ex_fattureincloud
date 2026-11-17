@@ -1,7 +1,7 @@
 defmodule ExFattureincloud.SDKParityTest do
   use ExUnit.Case, async: true
   import Plug.Conn
-  alias ExFattureincloud.{Clients, Error, IssuedDocuments, IssuedEInvoices, OAuth}
+  alias ExFattureincloud.{Clients, Error, IssuedDocuments, IssuedEInvoices, OAuth, Suppliers}
   @fixtures "test/fixtures/official_sdk.json" |> File.read!() |> Jason.decode!()
 
   setup do
@@ -37,6 +37,47 @@ defmodule ExFattureincloud.SDKParityTest do
     assert response.pagination["last_page"] == 2
     assert response.pagination["next_page_url"] == "page=2"
     assert response.pagination["total"] == 8
+  end
+
+  # Upstream TS issue #19: an omitted body, {} and {data: {}} had different
+  # acceptance at the API. Preserve the caller's choice without rewriting it.
+  for {body, encoded} <- [{nil, ""}, {%{}, "{}"}, {%{"data" => %{}}, "{\"data\":{}}"}] do
+    test "sendEInvoice preserves the explicit body choice #{inspect(body)}", %{client: client} do
+      Req.Test.expect(__MODULE__, fn conn ->
+        assert conn.method == "POST"
+        assert conn.request_path == "/c/1/issued_documents/2/e_invoice/send"
+        {:ok, bytes, conn} = read_body(conn)
+        assert bytes == unquote(encoded)
+        Req.Test.json(conn, %{"data" => %{}})
+      end)
+
+      assert {:ok, _response} =
+               IssuedEInvoices.send_e_invoice(client, 1, 2, unquote(Macro.escape(body)))
+
+      Req.Test.verify!(__MODULE__)
+    end
+  end
+
+  # Upstream TS issue #55: the API returns Supplier.ei_code even when the
+  # generated interface has no member for it.
+  test "supplier fields absent from generated models survive both HTTP directions", %{
+    client: client
+  } do
+    supplier = %{"name" => "Supplier", "ei_code" => "ABC1234", "future_field" => nil}
+    expected = %{"data" => supplier}
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      assert conn.method == "POST"
+      assert conn.request_path == "/c/1/entities/suppliers"
+      {:ok, bytes, conn} = read_body(conn)
+      assert Jason.decode!(bytes) === expected
+      Req.Test.json(conn, expected)
+    end)
+
+    assert {:ok, response} = Suppliers.create_supplier(client, 1, expected)
+    assert response.body === expected
+    assert response.data === supplier
+    Req.Test.verify!(__MODULE__)
   end
 
   test "official TS XML invoice is returned byte for byte", %{client: client} do

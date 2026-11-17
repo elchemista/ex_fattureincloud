@@ -2,6 +2,9 @@ defmodule ExFattureincloud.ContractTest do
   use ExUnit.Case, async: true
   import Plug.Conn
   alias ExFattureincloud.{Error, Operations}
+  alias ExFattureincloud.TestSupport.OpenAPIMock
+
+  @moduletag :contract
 
   @specification "priv/openapi.json" |> File.read!() |> Jason.decode!()
   @extensions "priv/openapi-extensions.json" |> File.read!() |> Jason.decode!()
@@ -9,7 +12,7 @@ defmodule ExFattureincloud.ContractTest do
   @operations for {path, item} <- @paths,
                   {method, operation} <- item,
                   method in ~w(get post put patch delete),
-                  do: {path, method, operation, item}
+                  do: {path, method, operation["operationId"]}
 
   setup do
     %{
@@ -24,8 +27,9 @@ defmodule ExFattureincloud.ContractTest do
 
   test "catalogue exactly covers the pinned specification and documented extensions" do
     assert length(Operations.all()) == length(@operations)
-    expected = MapSet.new(@operations, fn {_, _, op, _} -> op["operationId"] end)
+    expected = MapSet.new(@operations, fn {_, _, id} -> id end)
     assert MapSet.new(Operations.all(), & &1.operation_id) == expected
+    assert MapSet.new(OpenAPIMock.operation_ids()) == expected
   end
 
   test "the vendored contract matches its recorded hash" do
@@ -35,79 +39,61 @@ defmodule ExFattureincloud.ContractTest do
     assert @specification["info"]["version"] == metadata["version"]
   end
 
-  for {path, method, operation, item} <- @operations do
-    op_id = operation["operationId"]
+  test "upstream example inconsistencies are explicit and cannot silently grow" do
+    baseline = "test/fixtures/openapi_example_issues.json" |> File.read!() |> Jason.decode!()
+    metadata = "priv/openapi-source.json" |> File.read!() |> Jason.decode!()
+    actual = OpenAPIMock.example_issues() |> Jason.encode!() |> Jason.decode!()
 
-    test "#{op_id} matches official method, route, query and body", %{client: client} do
-      path = unquote(path)
-      method = unquote(method)
-      operation = unquote(Macro.escape(operation))
-      item = unquote(Macro.escape(item))
-      spec = Operations.get(operation["operationId"])
-      assert Atom.to_string(spec.id) == Macro.underscore(operation["operationId"])
+    assert baseline["contract_sha256"] == metadata["json_sha256"]
 
-      path_names = Regex.scan(~r/\{([^}]+)\}/, path, capture: :all_but_first) |> List.flatten()
+    assert baseline["extensions_sha256"] ==
+             :crypto.hash(:sha256, File.read!("priv/openapi-extensions.json"))
+             |> Base.encode16(case: :lower)
 
-      path_values =
-        Map.new(path_names, &{&1, if(&1 == "subscription_id", do: "SUB123", else: 123)})
+    assert Enum.map(actual, &Map.take(&1, ["source_file", "source"])) ==
+             Enum.map(baseline["issues"], &Map.take(&1, ["source_file", "source"])),
+           "Upstream example/schema discrepancies changed; review the source pointers instead of weakening validation"
+  end
 
-      expected_path =
-        Enum.reduce(path_values, path, fn {key, value}, acc ->
-          String.replace(acc, "{" <> key <> "}", to_string(value))
-        end)
+  for {path, method, op_id} <- @operations do
+    test "#{op_id} matches official method, route, query, body and response schema", %{
+      client: client
+    } do
+      id = unquote(op_id)
+      fixture = OpenAPIMock.request_example(id, examples: false)
+      spec = Operations.get(id)
+      assert Atom.to_string(spec.id) == Macro.underscore(id)
+      assert Atom.to_string(fixture.method) == unquote(method)
 
-      query = required_query(item, operation)
-      payload = %{data: %{name: "contract", notes: nil, enabled: false}}
-      content = get_in(operation, ["requestBody", "content"]) || %{}
-      multipart? = Map.has_key?(content, "multipart/form-data")
+      path_names =
+        Regex.scan(~r/\{([^}]+)\}/, unquote(path), capture: :all_but_first) |> List.flatten()
 
-      fields = [
-        filename: "attachment.txt",
-        attachment: {"file bytes", filename: "attachment.txt", content_type: "text/plain"}
-      ]
-
-      requests = if map_size(query) == 0, do: 2, else: 1
-
-      Req.Test.expect(__MODULE__, requests, fn conn ->
-        assert conn.method == String.upcase(method)
-        assert conn.request_path == expected_path
-
-        assert fetch_query_params(conn).query_params ==
-                 Map.new(query, fn {k, v} -> {k, to_string(v)} end)
-
-        if map_size(content) > 0 do
-          {:ok, bytes, conn} = read_body(conn)
-
-          if multipart? do
-            assert get_req_header(conn, "content-type")
-                   |> hd()
-                   |> String.starts_with?("multipart/form-data; boundary=")
-
-            assert bytes =~ "name=\"filename\""
-            assert bytes =~ "name=\"attachment\"; filename=\"attachment.txt\""
-            assert bytes =~ "file bytes"
-          else
-            assert Jason.decode!(bytes) == %{
-                     "data" => %{"name" => "contract", "notes" => nil, "enabled" => false}
-                   }
-          end
-        end
-
-        Req.Test.json(conn, %{data: %{id: 123}})
-      end)
-
+      args = [client | Enum.map(path_names, &Map.fetch!(fixture.path_params, &1))]
+      args = if fixture.content_type, do: args ++ [fixture.body], else: args
+      requests = if map_size(fixture.query) == 0, do: 2, else: 1
       module = Module.concat(ExFattureincloud, spec.module)
-      args = [client] ++ Enum.map(path_names, &path_values[&1])
+      expected = expected_response_body(id)
 
-      args =
-        if map_size(content) > 0,
-          do: args ++ [if(multipart?, do: fields, else: payload)],
-          else: args
+      OpenAPIMock.expect(__MODULE__, id,
+        count: requests,
+        examples: false,
+        on_request: fn conn ->
+          assert conn.request_path == fixture.path
 
-      assert {:ok, %{data: %{"id" => 123}}} = apply(module, spec.id, args ++ [query])
+          assert fetch_query_params(conn).query_params ==
+                   Map.new(fixture.query, fn {key, value} -> {key, to_string(value)} end)
 
-      if map_size(query) == 0 do
-        assert {:ok, %{data: %{"id" => 123}}} = apply(module, spec.id, args)
+          assert_serialized_body(conn, fixture)
+        end
+      )
+
+      assert {:ok, response} = apply(module, spec.id, args ++ [fixture.query])
+      assert response.body === expected
+      assert response.data === response_data(expected)
+
+      if map_size(fixture.query) == 0 do
+        assert {:ok, response} = apply(module, spec.id, args)
+        assert response.body === expected
       else
         assert {:error, %Error{kind: :validation}} = apply(module, spec.id, args)
       end
@@ -147,26 +133,38 @@ defmodule ExFattureincloud.ContractTest do
     assert {:ok, _} = ExFattureincloud.Webhooks.get_webhooks_subscription(client, 1, "SUB/a % è")
   end
 
-  defp required_query(item, operation) do
-    (Map.get(item, "parameters", []) ++ Map.get(operation, "parameters", []))
-    |> Enum.map(fn param ->
-      if param["$ref"],
-        do: get_in(@specification, String.split(String.trim_leading(param["$ref"], "#/"), "/")),
-        else: param
-    end)
-    |> Enum.filter(&(&1["in"] == "query" and &1["required"]))
-    |> Map.new(fn param ->
-      schema = param["schema"]
+  defp expected_response_body(id) do
+    responses = OpenAPIMock.operation(id).raw["responses"]
+    status = responses |> Map.keys() |> Enum.filter(&String.starts_with?(&1, "2")) |> Enum.min()
+    response = responses |> Map.fetch!(status) |> resolve_response()
 
-      value =
-        cond do
-          schema["enum"] -> hd(schema["enum"])
-          schema["type"] == "integer" -> 2026
-          schema["type"] == "boolean" -> false
-          true -> "2026-11-17"
-        end
-
-      {param["name"], value}
-    end)
+    case response["content"] do
+      content when content in [nil, %{}] -> ""
+      _content -> OpenAPIMock.response_example(id, String.to_integer(status), examples: false)
+    end
   end
+
+  defp resolve_response(%{"$ref" => reference}) do
+    OpenAPIMock.raw_contract()
+    |> get_in(reference |> String.trim_leading("#/") |> String.split("/"))
+  end
+
+  defp resolve_response(response), do: response
+
+  defp response_data(%{"data" => data}), do: data
+  defp response_data(body), do: body
+
+  defp assert_serialized_body(conn, %{content_type: "application/json", body: body}),
+    do: assert(conn.body_params === body)
+
+  defp assert_serialized_body(conn, %{content_type: "multipart/form-data", body: fields}) do
+    expected = Map.new(fields, fn {key, value} -> {to_string(key), value} end)
+    assert %Plug.Upload{} = conn.body_params["attachment"]
+    {bytes, options} = expected["attachment"]
+    assert conn.body_params["attachment"].filename == options[:filename]
+    assert File.read!(conn.body_params["attachment"].path) == bytes
+    assert conn.body_params["filename"] == expected["filename"]
+  end
+
+  defp assert_serialized_body(_conn, %{content_type: nil}), do: :ok
 end

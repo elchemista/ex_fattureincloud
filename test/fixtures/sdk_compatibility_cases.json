@@ -1,0 +1,241 @@
+{
+  "source_file": "priv/openapi.json",
+  "source_commit": "362e3fe524ca5a8cd8b79efdf036c464c16c5c42",
+  "contract_sha256": "a37901121867f62c7abb6f9efeed71d9e4c41736e9fd4097b2999533bf277b41",
+  "cases": [
+    {
+      "id": 1,
+      "source": "#/components/responses/CreateCashbookEntryResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "CreateCashbookEntryResponse",
+      "operations": [
+        "createCashbookEntry"
+      ]
+    },
+    {
+      "id": 2,
+      "source": "#/components/responses/CreateVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "CreateVatTypeResponse",
+      "operations": [
+        "createVatType"
+      ]
+    },
+    {
+      "id": 3,
+      "source": "#/components/responses/CreateWebhooksSubscriptionResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "CreateWebhooksSubscriptionResponse",
+      "operations": [
+        "CreateWebhooksSubscription"
+      ]
+    },
+    {
+      "id": 4,
+      "source": "#/components/responses/GetEInvoiceRejectionReasonResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "GetEInvoiceRejectionReasonResponse",
+      "operations": [
+        "getEInvoiceRejectionReason"
+      ]
+    },
+    {
+      "id": 5,
+      "source": "#/components/responses/GetEntityClientsInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "GetEntityClientPreCreateInfoResponse",
+      "operations": [
+        "getClientInfo"
+      ]
+    },
+    {
+      "id": 6,
+      "source": "#/components/responses/GetIssuedDocumentPreCreateInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "GetIssuedDocumentPreCreateInfoResponse",
+      "operations": [
+        "getIssuedDocumentPreCreateInfo"
+      ]
+    },
+    {
+      "id": 7,
+      "source": "#/components/responses/GetReceiptPreCreateInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "GetReceiptPreCreateInfoResponse",
+      "operations": [
+        "getReceiptPreCreateInfo"
+      ]
+    },
+    {
+      "id": 8,
+      "source": "#/components/responses/GetTaxProfileResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "GetTaxProfileResponse",
+      "operations": [
+        "getTaxProfile"
+      ]
+    },
+    {
+      "id": 9,
+      "source": "#/components/responses/GetVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "GetVatTypeResponse",
+      "operations": [
+        "getVatType"
+      ]
+    },
+    {
+      "id": 10,
+      "source": "#/components/responses/ListClientsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ListClientsResponse",
+      "operations": [
+        "listClients"
+      ]
+    },
+    {
+      "id": 11,
+      "source": "#/components/responses/ListF24Response/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ListF24Response",
+      "operations": [
+        "listF24"
+      ]
+    },
+    {
+      "id": 12,
+      "source": "#/components/responses/ListPendingReceivedDocumentsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ListPendingReceivedDocumentsResponse",
+      "operations": [
+        "listPendingReceivedDocuments"
+      ]
+    },
+    {
+      "id": 13,
+      "source": "#/components/responses/ListUserCompaniesResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ListUserCompaniesResponse",
+      "operations": [
+        "listUserCompanies"
+      ]
+    },
+    {
+      "id": 14,
+      "source": "#/components/responses/ListVatTypesResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ListVatTypesResponse",
+      "operations": [
+        "listVatTypes"
+      ]
+    },
+    {
+      "id": 15,
+      "source": "#/components/responses/ListWebhooksSubscriptionsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ListWebhooksSubscriptionsResponse",
+      "operations": [
+        "listWebhooksSubscriptions"
+      ]
+    },
+    {
+      "id": 16,
+      "source": "#/components/responses/ModifyVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ModifyVatTypeResponse",
+      "operations": [
+        "modifyVatType"
+      ]
+    },
+    {
+      "id": 17,
+      "source": "#/components/responses/ModifyWebhooksSubscriptionResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "model": "ModifyWebhooksSubscriptionResponse",
+      "operations": [
+        "modifyWebhooksSubscription"
+      ]
+    },
+    {
+      "id": 18,
+      "source": "#/paths/~1c~1{company_id}~1cashbook/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "CreateCashbookEntryRequest",
+      "operations": [
+        "createCashbookEntry"
+      ]
+    },
+    {
+      "id": 19,
+      "source": "#/paths/~1c~1{company_id}~1cashbook~1{document_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "ModifyCashbookEntryRequest",
+      "operations": [
+        "modifyCashbookEntry"
+      ]
+    },
+    {
+      "id": 20,
+      "source": "#/paths/~1c~1{company_id}~1issued_documents/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "CreateIssuedDocumentRequest",
+      "operations": [
+        "createIssuedDocument"
+      ]
+    },
+    {
+      "id": 21,
+      "source": "#/paths/~1c~1{company_id}~1received_documents~1{document_id}~1totals/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "GetExistingReceivedDocumentTotalsRequest",
+      "operations": [
+        "getExistingReceivedDocumentTotals"
+      ]
+    },
+    {
+      "id": 22,
+      "source": "#/paths/~1c~1{company_id}~1settings~1vat_types/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "CreateVatTypeRequest",
+      "operations": [
+        "createVatType"
+      ]
+    },
+    {
+      "id": 23,
+      "source": "#/paths/~1c~1{company_id}~1settings~1vat_types~1{vat_type_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "ModifyVatTypeRequest",
+      "operations": [
+        "modifyVatType"
+      ]
+    },
+    {
+      "id": 24,
+      "source": "#/paths/~1c~1{company_id}~1subscriptions/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "CreateWebhooksSubscriptionRequest",
+      "operations": [
+        "CreateWebhooksSubscription"
+      ]
+    },
+    {
+      "id": 25,
+      "source": "#/paths/~1c~1{company_id}~1taxes/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "CreateF24Request",
+      "operations": [
+        "createF24"
+      ]
+    },
+    {
+      "id": 26,
+      "source": "#/paths/~1c~1{company_id}~1taxes~1{document_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "model": "ModifyF24Request",
+      "operations": [
+        "modifyF24"
+      ]
+    }
+  ]
+}

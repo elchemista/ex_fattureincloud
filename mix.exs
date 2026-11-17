@@ -28,6 +28,11 @@ defmodule ExFattureincloud.MixProject do
         ]
       ],
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
+      test_coverage: [
+        summary: [threshold: 90],
+        ignore_modules: [~r/^ExFattureincloud\.TestSupport\./]
+      ],
       deps: deps(),
       dialyzer: [plt_local_path: "_build/dev/plts", plt_core_path: "_build/dev/plts"],
       aliases: [
@@ -66,9 +71,13 @@ defmodule ExFattureincloud.MixProject do
       {:jason, "~> 1.4"},
       {:telemetry, "~> 1.3"},
       {:plug, "~> 1.16", only: :test},
+      {:open_api_spex, "~> 3.22", only: :test},
       {:credo, "~> 1.7", only: :dev, runtime: false},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_environment), do: ["lib"]
 end

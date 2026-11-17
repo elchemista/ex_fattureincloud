@@ -1,0 +1,887 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-11-17",
+  "contract_sha256": "a37901121867f62c7abb6f9efeed71d9e4c41736e9fd4097b2999533bf277b41",
+  "extensions_sha256": "5332bb382d2ae27ee88c18d6cad4e9d293554bd1a7b23d48ca8e9aacb18e1b82",
+  "canonical_manifest": "test/fixtures/openapi_example_issues.json",
+  "scope": "Observed behavior for26 contradictory official examples. These offline probes do not establish backend acceptance or production reliability.",
+  "network_scope": "No Fatture in Cloud API calls: Go model decoding, JavaScript model decoding plus loopback requests, TypeScript custom Axios adapter.",
+  "sdks": {
+    "go": {
+      "repository": "https://github.com/fattureincloud/fattureincloud-go-sdk",
+      "commit": "e424718947f265f90bd6e24375f4b2edfc85e65e",
+      "probe": "Decode each canonical example into its official generated Go model with json.Unmarshal, then marshal accepted models. This uses the same JSON decoder as APIClient.decode; it does not call an HTTP endpoint.",
+      "evidence": [
+        "api/client.go:534-545",
+        "model/utils.go:293-295",
+        "model/utils.go:329-331"
+      ]
+    },
+    "javascript": {
+      "repository": "https://github.com/fattureincloud/fattureincloud-js-sdk",
+      "commit": "439192ae97720105aa2fcff603a2a2f81191dad0",
+      "package_version": "2.1.3",
+      "probe": "ApiClient.deserialize into the generated model for all26 examples, then JSON.stringify; separately send all9 request examples as raw objects through ApiClient.callApi to a loopback HTTP server and compare parsed request JSON. Model construction results are not request-transport validation results.",
+      "evidence": [
+        "src/ApiClient.js:352-365",
+        "src/ApiClient.js:511-555",
+        "src/model/CreateWebhooksSubscriptionResponse.js:46-54"
+      ]
+    },
+    "typescript": {
+      "repository": "https://github.com/fattureincloud/fattureincloud-ts-sdk",
+      "commit": "339771d28d0d28fef93149e7dab81552bd2a98b3",
+      "package_version": "2.1.3",
+      "probe": "Invoke the actual generated API class and operation for each case using a custom Axios adapter, including the standard Axios request/response transformations. Compare all17 response bodies and all9 serialized request JSON bodies to the source examples.",
+      "axios_version": "1.6.1",
+      "evidence": [
+        "common.ts:109-126"
+      ]
+    }
+  },
+  "summary": {
+    "cases": 26,
+    "responses": 17,
+    "requests": 9,
+    "go_model_accepted": 8,
+    "go_model_rejected": 18,
+    "javascript_model_accepted": 24,
+    "javascript_model_rejected": 2,
+    "javascript_raw_requests_preserved": 9,
+    "typescript_wire_json_preserved": 26
+  },
+  "cases": [
+    {
+      "id": 1,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/CreateCashbookEntryResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "createCashbookEntry"
+      ],
+      "go": {
+        "model": "CreateCashbookEntryResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "CreateCashbookEntryResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/date",
+          "#/data/id",
+          "#/data/payment_account_out"
+        ]
+      },
+      "typescript": {
+        "api_class": "CashbookApi",
+        "method": "createCashbookEntry",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 2,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/CreateVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "createVatType"
+      ],
+      "go": {
+        "model": "CreateVatTypeResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "CreateVatTypeResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/ei_type"
+        ]
+      },
+      "typescript": {
+        "api_class": "SettingsApi",
+        "method": "createVatType",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 3,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/CreateWebhooksSubscriptionResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "CreateWebhooksSubscription"
+      ],
+      "go": {
+        "model": "CreateWebhooksSubscriptionResponse",
+        "outcome": "rejected",
+        "error": "it.fattureincloud.webhooks.entities.create is not a valid EventType"
+      },
+      "javascript": {
+        "model": "CreateWebhooksSubscriptionResponse",
+        "model_outcome": "rejected",
+        "error": "data.map is not a function"
+      },
+      "typescript": {
+        "api_class": "WebhooksApi",
+        "method": "createWebhooksSubscription",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 4,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/GetEInvoiceRejectionReasonResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "getEInvoiceRejectionReason"
+      ],
+      "go": {
+        "model": "GetEInvoiceRejectionReasonResponse",
+        "outcome": "rejected",
+        "error": "parsing time \"2023-06-06\" as \"2006-01-02T15:04:05Z07:00\": cannot parse \"\" as \"T\""
+      },
+      "javascript": {
+        "model": "GetEInvoiceRejectionReasonResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/date"
+        ]
+      },
+      "typescript": {
+        "api_class": "IssuedEInvoicesApi",
+        "method": "getEInvoiceRejectionReason",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 5,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/GetEntityClientsInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "getClientInfo"
+      ],
+      "go": {
+        "model": "GetEntityClientPreCreateInfoResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "GetEntityClientPreCreateInfoResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/vat_types_list/0/ei_type"
+        ]
+      },
+      "typescript": {
+        "api_class": "ClientsApi",
+        "method": "getClientInfo",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 6,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/GetIssuedDocumentPreCreateInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "getIssuedDocumentPreCreateInfo"
+      ],
+      "go": {
+        "model": "GetIssuedDocumentPreCreateInfoResponse",
+        "outcome": "accepted",
+        "changed_paths": [
+          "#/data/default_values/ei_cassa_type",
+          "#/data/default_values/ei_default_document_type",
+          "#/data/default_values/ei_other_withholding_tax_causal",
+          "#/data/default_values/ei_other_withholding_tax_type",
+          "#/data/default_values/ei_withholding_tax_causal",
+          "#/data/default_values/show_payment_method",
+          "#/data/default_values/template",
+          "#/data/documents_type_info",
+          "#/data/ei_cassa_type_info",
+          "#/data/ei_causal_payment_info",
+          "#/data/ei_item_structure",
+          "#/data/ei_payment_structure",
+          "#/data/ei_regime_info",
+          "#/data/ei_structure",
+          "#/data/ei_withholding_type_info",
+          "#/data/measures_list",
+          "#/data/numerations/2019/123",
+          "#/data/price_lists/0/is_archived",
+          "#/data/use_e_invoice"
+        ]
+      },
+      "javascript": {
+        "model": "GetIssuedDocumentPreCreateInfoResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/default_values/ei_cassa_type",
+          "#/data/default_values/ei_default_document_type",
+          "#/data/default_values/ei_other_withholding_tax_causal",
+          "#/data/default_values/ei_other_withholding_tax_type",
+          "#/data/default_values/ei_withholding_tax_causal",
+          "#/data/default_values/show_payment_method",
+          "#/data/default_values/template",
+          "#/data/documents_type_info",
+          "#/data/ei_cassa_type_info",
+          "#/data/ei_causal_payment_info",
+          "#/data/ei_item_structure",
+          "#/data/ei_payment_structure",
+          "#/data/ei_regime_info",
+          "#/data/ei_structure",
+          "#/data/ei_withholding_type_info",
+          "#/data/measures_list",
+          "#/data/price_lists/0/is_archived",
+          "#/data/use_e_invoice"
+        ]
+      },
+      "typescript": {
+        "api_class": "IssuedDocumentsApi",
+        "method": "getIssuedDocumentPreCreateInfo",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 7,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/GetReceiptPreCreateInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "getReceiptPreCreateInfo"
+      ],
+      "go": {
+        "model": "GetReceiptPreCreateInfoResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal object into Go struct field GetReceiptPreCreateInfoResponse.data.numerations.2016.sales_receipt of type int32"
+      },
+      "javascript": {
+        "model": "GetReceiptPreCreateInfoResponse",
+        "model_outcome": "accepted",
+        "changed_paths": []
+      },
+      "typescript": {
+        "api_class": "ReceiptsApi",
+        "method": "getReceiptPreCreateInfo",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 8,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/GetTaxProfileResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "getTaxProfile"
+      ],
+      "go": {
+        "model": "GetTaxProfileResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "GetTaxProfileResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/default_vat/ei_type"
+        ]
+      },
+      "typescript": {
+        "api_class": "SettingsApi",
+        "method": "getTaxProfile",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 9,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/GetVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "getVatType"
+      ],
+      "go": {
+        "model": "GetVatTypeResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "GetVatTypeResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/ei_type"
+        ]
+      },
+      "typescript": {
+        "api_class": "SettingsApi",
+        "method": "getVatType",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 10,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ListClientsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "listClients"
+      ],
+      "go": {
+        "model": "ListClientsResponse",
+        "outcome": "accepted",
+        "changed_paths": [
+          "#/data/1/default_payment_method"
+        ]
+      },
+      "javascript": {
+        "model": "ListClientsResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/1/default_payment_method"
+        ]
+      },
+      "typescript": {
+        "api_class": "ClientsApi",
+        "method": "listClients",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 11,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ListF24Response/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "listF24"
+      ],
+      "go": {
+        "model": "ListF24Response",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal string into Go value of type float32"
+      },
+      "javascript": {
+        "model": "ListF24Response",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/aggregated_data/amount",
+          "#/data/0/due_date",
+          "#/data/1/due_date"
+        ]
+      },
+      "typescript": {
+        "api_class": "TaxesApi",
+        "method": "listF24",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 12,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ListPendingReceivedDocumentsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "listPendingReceivedDocuments"
+      ],
+      "go": {
+        "model": "ListPendingReceivedDocumentsResponse",
+        "outcome": "rejected",
+        "error": "expense is not a valid PendingReceivedDocumentType"
+      },
+      "javascript": {
+        "model": "ListPendingReceivedDocumentsResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/0/amortization",
+          "#/data/0/amount_other_withholding_tax",
+          "#/data/0/amount_withholding_tax",
+          "#/data/0/attachment_preview_url",
+          "#/data/0/created_at",
+          "#/data/0/date",
+          "#/data/0/description",
+          "#/data/0/e_invoice",
+          "#/data/0/entity",
+          "#/data/0/extra_data",
+          "#/data/0/invoice_number",
+          "#/data/0/is_detailed",
+          "#/data/0/is_marked",
+          "#/data/0/items_list",
+          "#/data/0/next_due_date",
+          "#/data/0/payments_list/0/due_date",
+          "#/data/0/payments_list/0/id",
+          "#/data/0/payments_list/0/paid_date",
+          "#/data/0/rc_center",
+          "#/data/0/tax_deductibility",
+          "#/data/0/updated_at",
+          "#/data/0/vat_deductibility",
+          "#/data/1/amount_other_withholding_tax",
+          "#/data/1/amount_withholding_tax",
+          "#/data/1/attachment_preview_url",
+          "#/data/1/created_at",
+          "#/data/1/date",
+          "#/data/1/description",
+          "#/data/1/e_invoice",
+          "#/data/1/entity",
+          "#/data/1/extra_data",
+          "#/data/1/iamortization",
+          "#/data/1/invoice_number",
+          "#/data/1/is_detailed",
+          "#/data/1/is_marked",
+          "#/data/1/items_list",
+          "#/data/1/next_due_date",
+          "#/data/1/payments_list/0/due_date",
+          "#/data/1/payments_list/0/id",
+          "#/data/1/payments_list/0/paid_date",
+          "#/data/1/rc_center",
+          "#/data/1/tax_deductibility",
+          "#/data/1/updated_at",
+          "#/data/1/vat_deductibility"
+        ]
+      },
+      "typescript": {
+        "api_class": "ReceivedDocumentsApi",
+        "method": "listPendingReceivedDocuments",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 13,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ListUserCompaniesResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "listUserCompanies"
+      ],
+      "go": {
+        "model": "ListUserCompaniesResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "ListUserCompaniesResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/companies/0/controlled_companies/0/controlled_companies",
+          "#/data/companies/0/controlled_companies/0/dic",
+          "#/data/companies/0/controlled_companies/0/fic",
+          "#/data/companies/0/controlled_companies/0/fic_license_expire",
+          "#/data/companies/0/controlled_companies/0/permissions",
+          "#/data/companies/0/controlled_companies/0/vat_number",
+          "#/data/companies/0/controlled_companies/1/controlled_companies",
+          "#/data/companies/0/controlled_companies/1/dic",
+          "#/data/companies/0/controlled_companies/1/fic",
+          "#/data/companies/0/controlled_companies/1/fic_license_expire",
+          "#/data/companies/0/controlled_companies/1/permissions",
+          "#/data/companies/0/vat_number"
+        ]
+      },
+      "typescript": {
+        "api_class": "UserApi",
+        "method": "listUserCompanies",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 14,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ListVatTypesResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "listVatTypes"
+      ],
+      "go": {
+        "model": "ListVatTypesResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal string into Go value of type bool"
+      },
+      "javascript": {
+        "model": "ListVatTypesResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/0/e_invoice",
+          "#/data/0/ei_type",
+          "#/data/1/ei_type"
+        ]
+      },
+      "typescript": {
+        "api_class": "InfoApi",
+        "method": "listVatTypes",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 15,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ListWebhooksSubscriptionsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "listWebhooksSubscriptions"
+      ],
+      "go": {
+        "model": "ListWebhooksSubscriptionsResponse",
+        "outcome": "rejected",
+        "error": "it.fattureincloud.webhooks.issued_documents.create is not a valid EventType"
+      },
+      "javascript": {
+        "model": "ListWebhooksSubscriptionsResponse",
+        "model_outcome": "accepted",
+        "changed_paths": []
+      },
+      "typescript": {
+        "api_class": "WebhooksApi",
+        "method": "listWebhooksSubscriptions",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 16,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ModifyVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "modifyVatType"
+      ],
+      "go": {
+        "model": "ModifyVatTypeResponse",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "ModifyVatTypeResponse",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/ei_type"
+        ]
+      },
+      "typescript": {
+        "api_class": "SettingsApi",
+        "method": "modifyVatType",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 17,
+      "source_file": "priv/openapi.json",
+      "source": "#/components/responses/ModifyWebhooksSubscriptionResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "operations": [
+        "modifyWebhooksSubscription"
+      ],
+      "go": {
+        "model": "ModifyWebhooksSubscriptionResponse",
+        "outcome": "rejected",
+        "error": "it.fattureincloud.webhooks.entities.create is not a valid EventType"
+      },
+      "javascript": {
+        "model": "ModifyWebhooksSubscriptionResponse",
+        "model_outcome": "rejected",
+        "error": "data.map is not a function"
+      },
+      "typescript": {
+        "api_class": "WebhooksApi",
+        "method": "modifyWebhooksSubscription",
+        "wire_phase": "response",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 18,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1cashbook/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "createCashbookEntry"
+      ],
+      "go": {
+        "model": "CreateCashbookEntryRequest",
+        "outcome": "accepted",
+        "changed_paths": []
+      },
+      "javascript": {
+        "model": "CreateCashbookEntryRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/date"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "CashbookApi",
+        "method": "createCashbookEntry",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 19,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1cashbook~1{document_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "modifyCashbookEntry"
+      ],
+      "go": {
+        "model": "ModifyCashbookEntryRequest",
+        "outcome": "accepted",
+        "changed_paths": []
+      },
+      "javascript": {
+        "model": "ModifyCashbookEntryRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/date"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "CashbookApi",
+        "method": "modifyCashbookEntry",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 20,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1issued_documents/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "createIssuedDocument"
+      ],
+      "go": {
+        "model": "CreateIssuedDocumentRequest",
+        "outcome": "accepted",
+        "changed_paths": []
+      },
+      "javascript": {
+        "model": "CreateIssuedDocumentRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/date",
+          "#/data/next_due_date",
+          "#/data/payments_list/0/due_date"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "IssuedDocumentsApi",
+        "method": "createIssuedDocument",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 21,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1received_documents~1{document_id}~1totals/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "getExistingReceivedDocumentTotals"
+      ],
+      "go": {
+        "model": "GetExistingReceivedDocumentTotalsRequest",
+        "outcome": "accepted",
+        "changed_paths": []
+      },
+      "javascript": {
+        "model": "GetExistingReceivedDocumentTotalsRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "ReceivedDocumentsApi",
+        "method": "getExistingReceivedDocumentTotals",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 22,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1settings~1vat_types/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "createVatType"
+      ],
+      "go": {
+        "model": "CreateVatTypeRequest",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "CreateVatTypeRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/ei_type"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "SettingsApi",
+        "method": "createVatType",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 23,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1settings~1vat_types~1{vat_type_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "modifyVatType"
+      ],
+      "go": {
+        "model": "ModifyVatTypeRequest",
+        "outcome": "rejected",
+        "error": "json: cannot unmarshal number into Go value of type string"
+      },
+      "javascript": {
+        "model": "ModifyVatTypeRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/ei_type"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "SettingsApi",
+        "method": "modifyVatType",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 24,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1subscriptions/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "CreateWebhooksSubscription"
+      ],
+      "go": {
+        "model": "CreateWebhooksSubscriptionRequest",
+        "outcome": "rejected",
+        "error": "it.fattureincloud.webhooks.entities.create is not a valid EventType"
+      },
+      "javascript": {
+        "model": "CreateWebhooksSubscriptionRequest",
+        "model_outcome": "accepted",
+        "changed_paths": [],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "WebhooksApi",
+        "method": "createWebhooksSubscription",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 25,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1taxes/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "createF24"
+      ],
+      "go": {
+        "model": "CreateF24Request",
+        "outcome": "accepted",
+        "changed_paths": []
+      },
+      "javascript": {
+        "model": "CreateF24Request",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/due_date"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "TaxesApi",
+        "method": "createF24",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    },
+    {
+      "id": 26,
+      "source_file": "priv/openapi.json",
+      "source": "#/paths/~1c~1{company_id}~1taxes~1{document_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "operations": [
+        "modifyF24"
+      ],
+      "go": {
+        "model": "ModifyF24Request",
+        "outcome": "accepted",
+        "changed_paths": []
+      },
+      "javascript": {
+        "model": "ModifyF24Request",
+        "model_outcome": "accepted",
+        "changed_paths": [
+          "#/data/due_date"
+        ],
+        "raw_request_json_preserved": true
+      },
+      "typescript": {
+        "api_class": "TaxesApi",
+        "method": "modifyF24",
+        "wire_phase": "request",
+        "json_preserved": true
+      }
+    }
+  ],
+  "issue_evidence": [
+    {
+      "repository": "https://github.com/fattureincloud/fattureincloud-ts-sdk",
+      "number": 19,
+      "url": "https://github.com/fattureincloud/fattureincloud-ts-sdk/issues/19",
+      "status_observed": "closed",
+      "closed_at": "2022-12-05",
+      "maintainer_comment": "https://github.com/fattureincloud/fattureincloud-ts-sdk/issues/19#issuecomment-1309912137",
+      "finding": "Maintainer confirmed a service JSON-validation change and restored behavior for empty e-invoice request bodies. Omitted and empty-object request bodies are distinct inputs.",
+      "elixir_policy": "Preserve nil versus empty object; never automatically retry SDI writes."
+    },
+    {
+      "repository": "https://github.com/fattureincloud/fattureincloud-ts-sdk",
+      "number": 14,
+      "url": "https://github.com/fattureincloud/fattureincloud-ts-sdk/issues/14",
+      "status_observed": "closed",
+      "closed_at": "2022-09-22",
+      "maintainer_comment": "https://github.com/fattureincloud/fattureincloud-ts-sdk/issues/14#issuecomment-1255134615",
+      "finding": "Maintainer confirmed a released fix for OAuth camelCase typings versus snake_case wire fields.",
+      "elixir_policy": "Parse access_token, refresh_token and expires_in from the wire; expose OAuth.Token."
+    },
+    {
+      "repository": "https://github.com/fattureincloud/fattureincloud-ts-sdk",
+      "number": 55,
+      "url": "https://github.com/fattureincloud/fattureincloud-ts-sdk/issues/55",
+      "status_observed": "open",
+      "reported_at": "2025-08-11",
+      "finding": "Reporter describes Supplier.ei_code being returned by the API but missing from the TypeScript model. No maintainer resolution observed.",
+      "elixir_policy": "Preserve additional response keys, including supplier ei_code."
+    }
+  ],
+  "issue_reviewed_at": "2026-11-17"
+}

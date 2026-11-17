@@ -6,11 +6,13 @@ License, copyright (c) 2021 Fatture in Cloud. Its license is reproduced in
 Generated endpoint metadata and documentation derive from that contract.
 
 OAuth/filter behavior and parity test cases also reference the official Go and
-TypeScript SDKs, copyright (c) 2022 Fatture in Cloud, under the following license.
+TypeScript SDKs, copyright (c) 2022 Fatture in Cloud, and the official JavaScript
+SDK, copyright (c) 2021 Fatture in Cloud, under the following license.
 Pinned commits and source paths are documented in `guides/sdk-parity.md`.
 
 MIT License
 
+Copyright (c) 2021 Fatture in Cloud
 Copyright (c) 2022 Fatture in Cloud
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

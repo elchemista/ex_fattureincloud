@@ -72,6 +72,11 @@ defmodule ExFattureincloud.OAuthTest do
                code: "code"
              )
 
+    # Upstream TS issue #14: OAuth responses use snake_case on the wire.
+    assert token.access_token == "access-secret"
+    assert token.refresh_token == "refresh-secret"
+    assert token.token_type == "bearer"
+
     assert token.expires_at in (System.system_time(:second) + 86_399)..(System.system_time(
                                                                           :second
                                                                         ) +

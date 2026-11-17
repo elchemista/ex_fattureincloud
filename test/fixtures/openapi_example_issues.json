@@ -1,0 +1,240 @@
+{
+  "contract_sha256": "a37901121867f62c7abb6f9efeed71d9e4c41736e9fd4097b2999533bf277b41",
+  "extensions_sha256": "5332bb382d2ae27ee88c18d6cad4e9d293554bd1a7b23d48ca8e9aacb18e1b82",
+  "issues": [
+    {
+      "error": "official example: #/data/id: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/CreateCashbookEntryResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/CreateVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/types/0: Invalid value for enum; #/data/types/1: Invalid value for enum; #/warnings: Invalid array. Got: string",
+      "status": null,
+      "source": "#/components/responses/CreateWebhooksSubscriptionResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/date: Invalid format. Expected :\"date-time\"",
+      "status": null,
+      "source": "#/components/responses/GetEInvoiceRejectionReasonResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/vat_types_list/0/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/GetEntityClientsInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/numerations/2019/123: null value where integer expected",
+      "status": null,
+      "source": "#/components/responses/GetIssuedDocumentPreCreateInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/numerations/2016/sales_receipt: Invalid integer. Got: object",
+      "status": null,
+      "source": "#/components/responses/GetReceiptPreCreateInfoResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/default_vat/ei_type: Invalid string. Got: number",
+      "status": null,
+      "source": "#/components/responses/GetTaxProfileResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/GetVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #: Failed to cast value as ListClientsResponsePage. Value must be castable using `allOf` schemas listed.; #/data/1/default_payment_method: null value where object expected",
+      "status": null,
+      "source": "#/components/responses/ListClientsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/aggregated_data/amount: JSON wire types differ after schema casting",
+      "status": null,
+      "source": "#/components/responses/ListF24Response/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #: Failed to cast value as ListPendingReceivedDocumentsResponsePage. Value must be castable using `allOf` schemas listed.; #/data/1/type: Invalid value for enum",
+      "status": null,
+      "source": "#/components/responses/ListPendingReceivedDocumentsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/companies/0/vat_number: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/ListUserCompaniesResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/0/e_invoice: Invalid boolean. Got: string; #/data/0/ei_type: Invalid string. Got: integer; #/data/1/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/ListVatTypesResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/0/types/0: Invalid value for enum; #/data/0/types/1: Invalid value for enum; #/data/1/types/0: Invalid value for enum",
+      "status": null,
+      "source": "#/components/responses/ListWebhooksSubscriptionsResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/components/responses/ModifyVatTypeResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/types/0: Invalid value for enum; #/data/types/1: Invalid value for enum; #/warnings: Invalid array. Got: string",
+      "status": null,
+      "source": "#/components/responses/ModifyWebhooksSubscriptionResponse/content/application~1json/examples/example-1",
+      "phase": "response",
+      "example": "example-1",
+      "operation_id": null,
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/id: Missing field: id",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1cashbook/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "createCashbookEntry",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/id: Missing field: id; #/data/kind: Missing field: kind",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1cashbook~1{document_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "modifyCashbookEntry",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/payment_method/name: Missing field: name",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1issued_documents/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "createIssuedDocument",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/entity: Missing field: entity",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1received_documents~1{document_id}~1totals/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "getExistingReceivedDocumentTotals",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1settings~1vat_types/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "createVatType",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/ei_type: Invalid string. Got: integer",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1settings~1vat_types~1{vat_type_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "modifyVatType",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/types/0: Invalid value for enum; #/data/types/1: Invalid value for enum",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1subscriptions/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "CreateWebhooksSubscription",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/payment_account/name: Missing field: name",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1taxes/post/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "createF24",
+      "source_file": "priv/openapi.json"
+    },
+    {
+      "error": "official example: #/data/payment_account/name: Missing field: name",
+      "status": null,
+      "source": "#/paths/~1c~1{company_id}~1taxes~1{document_id}/put/requestBody/content/application~1json/examples/example-1",
+      "phase": "request",
+      "example": "example-1",
+      "operation_id": "modifyF24",
+      "source_file": "priv/openapi.json"
+    }
+  ]
+}
