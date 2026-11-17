@@ -19,7 +19,7 @@ Nel progetto Phoenix o Elixir che la utilizza:
 
 ```elixir
 defp deps do
-  [{:ex_fattureincloud, path: "../ex_fattureincloud"}]
+  [{:ex_fattureincloud, github: "elchemista/ex_fattureincloud"}]
 end
 ```
 
